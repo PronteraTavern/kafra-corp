@@ -1,11 +1,8 @@
-/* eslint-disable @typescript-eslint/require-await */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { User } from 'src/users/user.entity';
+import { ValidatedUserDto } from 'src/users/dtos/validated-user.dto';
 import { UsersService } from 'src/users/users.service';
+import { LoginResponse } from './dtos/login-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -14,9 +11,12 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.usersService.findOne(email);
-    if (user && user.password_hash == pass) {
+  async validateUser(
+    email: string,
+    pass: string,
+  ): Promise<ValidatedUserDto | null> {
+    const user = await this.usersService.findByEmail(email);
+    if (user && user.password_hash === pass) {
       const { password_hash, ...result } = user;
       return result;
     }
@@ -24,10 +24,8 @@ export class AuthService {
     return null;
   }
 
-  async login(user: any) {
-    console.log(user)
+  login(user: ValidatedUserDto): LoginResponse {
     const payload = { email: user.email, sub: user.id };
-
     return {
       access_token: this.jwtService.sign(payload),
     };
