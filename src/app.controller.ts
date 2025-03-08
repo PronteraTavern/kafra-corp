@@ -12,12 +12,13 @@ export class AppController {
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
   login(@Request() req): LoginResponse {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
     return this.authService.login(req.user);
   }
 
   @Get('profile')
   getProfile(@Request() req) {
+    console.log(req);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
     return req.user;
   }
