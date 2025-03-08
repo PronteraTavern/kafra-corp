@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
@@ -23,7 +22,6 @@ import { User } from './users/user.entity';
       synchronize: false,
     }),
   ],
-  controllers: [AppController],
 
   providers: [
     {
