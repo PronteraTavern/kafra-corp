@@ -25,8 +25,8 @@ export class AuthService {
     return null;
   }
 
-  login(user: ValidatedUserDto): LoginResponse {
-    const payload: JwtPayload = { sub: user.id };
+  login(id: string): LoginResponse {
+    const payload: JwtPayload = { sub: id };
     return {
       access_token: this.jwtService.sign(payload),
     };

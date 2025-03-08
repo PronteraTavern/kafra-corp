@@ -3,23 +3,28 @@ import { LocalAuthGuard } from './auth/local-auth.guard';
 import { AuthService } from './auth/auth.service';
 import { Public } from './public.decorator';
 import { LoginResponse } from './auth/dtos/login-response.dto';
+import { ValidatedUserDto } from './users/dtos/validated-user.dto';
+import { UsersService } from './users/users.service';
+import { AuthenticatedRequest } from './auth/interfaces/authenticated-request.interface';
 
 @Controller()
 export class AppController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private userService: UsersService,
+  ) {}
 
   @Public()
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
-  login(@Request() req): LoginResponse {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
-    return this.authService.login(req.user);
+  login(@Request() req: AuthenticatedRequest): LoginResponse {
+    return this.authService.login(req.user.id);
   }
 
   @Get('profile')
-  getProfile(@Request() req) {
-    console.log(req);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
-    return req.user;
+  async getProfile(
+    @Request() req: AuthenticatedRequest,
+  ): Promise<ValidatedUserDto | null> {
+    return await this.userService.profile(req.user.id);
   }
 }
