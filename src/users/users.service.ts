@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { ValidatedUserDto } from './dtos/validated-user.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -39,7 +40,14 @@ export class UsersService {
       //Lucas - This is probably wrong.
       throw new BadRequestException();
     }
-    const createdUser: User = await this.userRespository.save(createUserDto);
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
+    const newUser = this.userRespository.create({
+      ...createUserDto,
+      password_hash: hashedPassword,
+    });
+
+    const createdUser: User = await this.userRespository.save(newUser);
     const { password_hash, ...result } = createdUser;
 
     return result;
