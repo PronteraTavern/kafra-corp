@@ -3,7 +3,9 @@ import { UsersService } from './users.service';
 import { AuthenticatedRequest } from 'src/auth/interfaces/authenticated-request.interface';
 import { SafeUserDto } from './dtos/safe-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('users')
 export class UserController {
   constructor(private userService: UsersService) {}
