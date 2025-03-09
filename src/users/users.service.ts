@@ -6,7 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { ValidatedUserDto } from './dtos/validated-user.dto';
+import { SafeUserDto } from './dtos/safe-user.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
 
@@ -25,7 +25,7 @@ export class UsersService {
     return this.userRespository.findOneBy({ id });
   }
 
-  async profile(id: string): Promise<ValidatedUserDto> {
+  async profile(id: string): Promise<SafeUserDto> {
     const user = await this.userRespository.findOneBy({ id });
     if (user) {
       const { password_hash, ...result } = user;
@@ -34,7 +34,7 @@ export class UsersService {
     throw new NotFoundException();
   }
 
-  async create(createUserDto: CreateUserDto): Promise<ValidatedUserDto> {
+  async create(createUserDto: CreateUserDto): Promise<SafeUserDto> {
     const user = await this.findByEmail(createUserDto.email);
     if (user) {
       //Lucas - This is probably wrong.
@@ -53,11 +53,11 @@ export class UsersService {
     return result;
   }
 
-  async remove(id: string): Promise<ValidatedUserDto> {
+  async remove(id: string): Promise<SafeUserDto> {
     const user = await this.findById(id);
     if (!user) {
       //Lucas - This is probably wrong.
-      throw new NotFoundException(`User with ID ${id} not found`);
+      throw new NotFoundException();
     }
     const deletedUser = await this.userRespository.remove(user);
     const { password_hash, ...result } = deletedUser;
