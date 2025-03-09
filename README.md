@@ -15,6 +15,24 @@ npx supabase start
 npx supabase migration up
 ```
 
+Then, create a `.env` file with the same keys as the example below:
+
+```
+# Application config
+APP_PORT=3000
+
+# Database credentials
+DB_HOST= 'localhost'
+DB_PORT = 54322
+DB_NAME='postgres'
+DB_USERNAME= 'postgres'
+DB_PASSWORD= 'postgres'
+
+# Security config
+JWT_SECRET='DO NOT USE THIS VALUE. INSTEAD, CREATE A COMPLEX SECRET AND KEEP IT SAFE OUTSIDE OF THE SOURCE CODE.'
+JWT_EXPIRATION=360s
+```
+
 ## Compile and run the project
 
 ```bash
