@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Put, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Put,
+  Request,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthenticatedRequest } from 'src/auth/interfaces/authenticated-request.interface';
 import { SafeUserDto } from './dtos/safe-user.dto';
@@ -7,12 +15,12 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiBearerAuth()
 @Controller('users')
-export class UserController {
+export class UsersController {
   constructor(private userService: UsersService) {}
 
   @Get('profile')
-  async getProfile(@Request() req: AuthenticatedRequest): Promise<SafeUserDto> {
-    return await this.userService.profile(req.user.id);
+  async profile(@Param('id') id: string): Promise<SafeUserDto> {
+    return await this.userService.profile(id);
   }
 
   @Delete()
