@@ -19,15 +19,25 @@ export class UsersService {
   ) {}
 
   findByEmail(email: string): Promise<User | null> {
+    // Lucas - The logic above is to avoid a known issue in typeORM lib where findOneBy retrieves the first user db in case the input is null.
+    // More info - https://github.com/typeorm/typeorm/issues/9316
+    if (!email) {
+      throw new BadRequestException();
+    }
     return this.userRepository.findOneBy({ email });
   }
 
   findById(id: string): Promise<User | null> {
+    // Lucas - The logic above is to avoid a known issue in typeORM lib where findOneBy retrieves the first user db in case the input is null.
+    // More info - https://github.com/typeorm/typeorm/issues/9316
+    if (!id) {
+      throw new BadRequestException();
+    }
     return this.userRepository.findOneBy({ id });
   }
 
   async profile(id: string): Promise<SafeUserDto> {
-    const user = await this.userRepository.findOneBy({ id });
+    const user = await this.findById(id);
     if (user) {
       const { password_hash, ...result } = user;
       return result;

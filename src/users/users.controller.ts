@@ -19,7 +19,7 @@ import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 export class UsersController {
   constructor(private userService: UsersService) {}
 
-  @Get('profile')
+  @Get(':id')
   @ApiResponse({
     status: 200,
     description: 'Use profile has been sucessfully found',
