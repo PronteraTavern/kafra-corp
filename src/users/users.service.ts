@@ -96,4 +96,25 @@ export class UsersService {
 
     return result;
   }
+
+  async findAll(): Promise<SafeUserDto[]> {
+    const users = await this.userRepository.find();
+    const safeUsers = users.map<SafeUserDto>((user) => {
+      const { password_hash, ...result } = user;
+      return result;
+    });
+    return safeUsers;
+  }
+
+  async updateRole(id: string, newRole: string): Promise<SafeUserDto> {
+    const user = await this.findById(id);
+    if (!user) {
+      throw new NotFoundException();
+    }
+    user.role = newRole;
+    const updatedUser: User = await this.userRepository.save(user);
+    const { password_hash, ...result } = updatedUser;
+
+    return result;
+  }
 }

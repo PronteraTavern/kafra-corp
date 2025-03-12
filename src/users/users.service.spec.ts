@@ -28,6 +28,7 @@ describe('UsersService', () => {
     create: jest.fn(),
     save: jest.fn(),
     remove: jest.fn(),
+    find: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -175,6 +176,86 @@ describe('UsersService', () => {
       await expect(usersService.update('invalid-id', {})).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('findAll', () => {
+    it('should return an array of safeusers', async () => {
+      const users: User[] = [
+        {
+          id: '123e4567-e89b-12d3-a456-426614174000',
+          first_name: 'John',
+          last_name: 'Doe',
+          email: 'john@example.com',
+          avatar: 'https://example.com/avatar1.png',
+          role: 'user',
+          password_hash: 'hashedpassword',
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+        {
+          id: '987e6543-e89b-12d3-a456-426614174111',
+          first_name: 'Jane',
+          last_name: 'Doe',
+          email: 'jane@example.com',
+          avatar: 'https://example.com/avatar2.png',
+          role: 'admin',
+          password_hash: 'hashedpassword',
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+      ];
+
+      const safeUsers = users.map<SafeUserDto>((user) => {
+        const { password_hash, ...result } = user;
+        return result;
+      });
+
+      userRepository.find = jest.fn().mockResolvedValue(users);
+
+      const result = await usersService.findAll();
+      expect(result).toEqual(safeUsers);
+    });
+
+    it('should return an empty array if no users exist', async () => {
+      userRepository.find = jest.fn().mockResolvedValue([]);
+
+      const result = await usersService.findAll();
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('updateRole', () => {
+    it('should update the user role and return a SafeUserDto', async () => {
+      const user: User = {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        first_name: 'John',
+        last_name: 'Doe',
+        email: 'john@example.com',
+        avatar: 'https://example.com/avatar1.png',
+        role: 'user',
+        password_hash: 'hashedpassword',
+        created_at: new Date(),
+        updated_at: new Date(),
+      };
+
+      userRepository.findOneBy = jest.fn().mockResolvedValue(user);
+      userRepository.save = jest.fn().mockResolvedValue({
+        ...user,
+        role: 'admin',
+      });
+
+      const result = await usersService.updateRole(user.id, 'admin');
+
+      expect(result.role).toEqual('admin');
+    });
+
+    it('should throw NotFoundException if user does not exist', async () => {
+      userRepository.findOneBy = jest.fn().mockResolvedValue(null);
+
+      await expect(
+        usersService.updateRole('invalid-id', 'admin'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });
