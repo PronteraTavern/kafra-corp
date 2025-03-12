@@ -1,5 +1,5 @@
 import {
-  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -38,8 +38,7 @@ export class UsersService {
   async create(createUserDto: CreateUserDto): Promise<SafeUserDto> {
     const user = await this.findByEmail(createUserDto.email);
     if (user) {
-      //Lucas - This is probably wrong.
-      throw new BadRequestException();
+      throw new ConflictException();
     }
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
@@ -57,7 +56,6 @@ export class UsersService {
   async remove(id: string): Promise<SafeUserDto> {
     const user = await this.findById(id);
     if (!user) {
-      //Lucas - This is probably wrong.
       throw new NotFoundException();
     }
     const deletedUser = await this.userRepository.remove(user);
@@ -72,7 +70,6 @@ export class UsersService {
   ): Promise<SafeUserDto> {
     const user = await this.findById(id);
     if (!user) {
-      //Lucas - This is probably wrong.
       throw new NotFoundException();
     }
     if (updatedUserDto.password) {
