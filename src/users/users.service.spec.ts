@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ConflictException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { SafeUserDto } from './dtos/safe-user.dto';
@@ -101,27 +101,20 @@ describe('UsersService', () => {
       });
     });
 
-    it('should throw ConflictExcpetion if email is already in use', async () => {
+    it('should throw BadRequest if email is already in use', async () => {
       userRepository.findOneBy = jest.fn().mockResolvedValue(mockUser);
       await expect(
         usersService.create({ ...mockUser, password: 'test' }),
-      ).rejects.toThrow(ConflictException);
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('remove', () => {
-    it('should remove a user and return a SafeUserDto', async () => {
+    it('should remove a user and return nothing', async () => {
       userRepository.findOneBy = jest.fn().mockResolvedValue(mockUser);
       userRepository.remove = jest.fn().mockResolvedValue(mockUser);
 
-      const expectedSafeUser: SafeUserDto = {
-        id: mockUser.id,
-        name: mockUser.name,
-        email: mockUser.email,
-        created_at: mockUser.created_at,
-      };
-
-      expect(await usersService.remove(mockUser.id)).toEqual(expectedSafeUser);
+      expect(await usersService.remove(mockUser.id)).toBeUndefined();
     });
 
     it('should throw NotFoundException if user does not exist', async () => {
