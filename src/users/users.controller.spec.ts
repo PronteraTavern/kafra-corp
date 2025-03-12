@@ -36,9 +36,13 @@ describe('UserController', () => {
     it('should return user profile info', async () => {
       const userProfile: SafeUserDto = {
         id: '123e4567-e89b-12d3-a456-426614174000',
-        name: 'John Doe',
+        avatar: 'https://randomavatar.com',
+        first_name: 'John',
+        last_name: 'Doe',
         email: 'john@example.com',
+        role: 'user',
         created_at: new Date(),
+        updated_at: new Date(),
       };
 
       jest.spyOn(userService, 'profile').mockResolvedValue(userProfile);
@@ -58,9 +62,13 @@ describe('UserController', () => {
     it('should call userService.profile with the correct id', async () => {
       const userProfile: SafeUserDto = {
         id: '123e4567-e89b-12d3-a456-426614174000',
-        name: 'John Doe',
+        avatar: 'https://randomavatar.com',
+        first_name: 'John',
+        last_name: 'Doe',
         email: 'john@example.com',
+        role: 'user',
         created_at: new Date(),
+        updated_at: new Date(),
       };
 
       const spy = jest

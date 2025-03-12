@@ -71,15 +71,15 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException();
     }
+
+    // Only update the password if it's provided
     if (updatedUserDto.password) {
-      user.password_hash = await bcrypt.hash(updatedUserDto.password, 10);
+      updatedUserDto.password = await bcrypt.hash(updatedUserDto.password, 10);
+      delete updatedUserDto.password; // Remove the password field before saving
     }
-    if (updatedUserDto.email) {
-      user.email = updatedUserDto.email;
-    }
-    if (updatedUserDto.name) {
-      user.name = updatedUserDto.name;
-    }
+
+    // Merge the fields from updatedUserDto into the user object
+    Object.assign(user, updatedUserDto);
 
     const updatedUser: User = await this.userRepository.save(user);
     const { password_hash, ...result } = updatedUser;

@@ -12,12 +12,15 @@ describe('UsersService', () => {
   let usersService: UsersService;
   let userRepository: Repository<User>;
 
-  const mockUser: User = {
+  const mockUser: SafeUserDto = {
     id: '123e4567-e89b-12d3-a456-426614174000',
-    name: 'John Doe',
+    avatar: 'https://randomavatar.com',
+    first_name: 'John',
+    last_name: 'Doe',
     email: 'john@example.com',
-    password_hash: 'hashedpassword',
+    role: 'user',
     created_at: new Date(),
+    updated_at: new Date(),
   };
 
   const mockUserRepository = {
@@ -51,9 +54,13 @@ describe('UsersService', () => {
       userRepository.findOneBy = jest.fn().mockResolvedValue(mockUser);
       const expectedSafeUser: SafeUserDto = {
         id: mockUser.id,
-        name: mockUser.name,
+        avatar: mockUser.avatar,
+        first_name: mockUser.first_name,
+        last_name: mockUser.last_name,
         email: mockUser.email,
+        role: mockUser.role,
         created_at: mockUser.created_at,
+        updated_at: mockUser.updated_at,
       };
 
       const result = await usersService.profile(mockUser.id);
@@ -71,14 +78,19 @@ describe('UsersService', () => {
   describe('create', () => {
     it('should create a new user and return a SafeUserDto', async () => {
       const createUserDto: CreateUserDto = {
-        name: 'Jane Doe',
+        avatar: 'http://randomavatar.com',
+        first_name: 'Jane',
+        last_name: 'Doe',
         email: 'jane@example.com',
         password: 'securepassword',
       };
 
       userRepository.findOneBy = jest.fn().mockResolvedValue(null);
       userRepository.create = jest.fn().mockReturnValue({
-        name: createUserDto.name,
+        avatar: createUserDto.avatar,
+        first_name: createUserDto.first_name,
+        last_name: createUserDto.last_name,
+        role: 'user',
         email: createUserDto.email,
         password_hash: 'hashedpassword',
       });
@@ -86,18 +98,26 @@ describe('UsersService', () => {
       const random_date = new Date();
       userRepository.save = jest.fn().mockResolvedValue({
         id: 'generated-id',
-        name: createUserDto.name,
+        avatar: createUserDto.avatar,
+        first_name: createUserDto.first_name,
+        last_name: createUserDto.last_name,
+        role: 'user',
         email: createUserDto.email,
         password_hash: 'hashedpassword',
         created_at: random_date,
+        updated_at: random_date,
       });
 
       const result = await usersService.create(createUserDto);
       expect(result).toEqual<SafeUserDto>({
         id: 'generated-id',
-        name: createUserDto.name,
+        avatar: createUserDto.avatar,
+        first_name: createUserDto.first_name,
+        last_name: createUserDto.last_name,
+        role: 'user',
         email: createUserDto.email,
         created_at: random_date,
+        updated_at: random_date,
       });
     });
 
@@ -128,7 +148,7 @@ describe('UsersService', () => {
   describe('update', () => {
     it('should update user details and return a SafeUserDto', async () => {
       const updated_name = 'Updated Name';
-      const updateUserDto: UpdateUserDto = { name: updated_name };
+      const updateUserDto: UpdateUserDto = { first_name: updated_name };
       userRepository.findOneBy = jest.fn().mockResolvedValue(mockUser);
       userRepository.save = jest.fn().mockResolvedValue({
         ...mockUser,
@@ -137,9 +157,13 @@ describe('UsersService', () => {
 
       const expectedSafeUser: SafeUserDto = {
         id: mockUser.id,
-        name: updated_name,
+        avatar: mockUser.avatar,
+        first_name: updated_name,
+        last_name: mockUser.last_name,
         email: mockUser.email,
+        role: mockUser.role,
         created_at: mockUser.created_at,
+        updated_at: mockUser.updated_at,
       };
 
       const result = await usersService.update(mockUser.id, updateUserDto);
