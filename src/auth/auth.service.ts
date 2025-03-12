@@ -1,10 +1,16 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SafeUserDto } from 'src/users/dtos/safe-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { SignInResponseDto } from './dtos/signin-response.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from 'src/users/dtos/create-user.dto';
+import { SignUpResponseDto } from './dtos/signup-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -23,10 +29,26 @@ export class AuthService {
     throw new UnauthorizedException();
   }
 
-  signIn(id: string): SignInResponseDto {
-    const payload: JwtPayload = { sub: id };
+  async signIn(id: string): Promise<SignInResponseDto> {
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      throw new BadRequestException();
+    }
+    const payload: JwtPayload = { id: user.id, role: user.role };
+    const { password_hash, ...userResult } = user;
+
     return {
       access_token: this.jwtService.sign(payload),
+      user_info: userResult,
     };
+  }
+
+  async signUp(createUserDto: CreateUserDto): Promise<SignUpResponseDto> {
+    const user = await this.usersService.create(createUserDto);
+
+    const payload: JwtPayload = { id: user.id, role: user.role };
+    const access_token = this.jwtService.sign(payload);
+
+    return { access_token, user_info: user };
   }
 }

@@ -12,10 +12,10 @@ import { SignInResponseDto } from './dtos/signin-response.dto';
 import { AuthenticatedRequest } from './interfaces/authenticated-request.interface';
 import { LocalAuthGuard } from './local-auth.guard';
 import { CreateUserDto } from 'src/users/dtos/create-user.dto';
-import { SafeUserDto } from 'src/users/dtos/safe-user.dto';
 import { UsersService } from 'src/users/users.service';
 import { SignInRequestDto } from './dtos/signin-request.dto';
 import { ApiResponse } from '@nestjs/swagger';
+import { SignUpResponseDto } from './dtos/signup-response.dto';
 
 @Controller()
 export class AuthController {
@@ -35,11 +35,15 @@ export class AuthController {
     status: 401,
     description: 'Unauthorized',
   })
-  signIn(
+  @ApiResponse({
+    status: 400,
+    description: 'Something wrong happened',
+  })
+  async signIn(
     @Request() req: AuthenticatedRequest,
     @Body() _signInRequest: SignInRequestDto,
-  ): SignInResponseDto {
-    return this.authService.signIn(req.user.id);
+  ): Promise<SignInResponseDto> {
+    return await this.authService.signIn(req.user.id);
   }
 
   @Public()
@@ -53,7 +57,9 @@ export class AuthController {
     status: 400,
     description: 'Bad Request',
   })
-  async signUp(@Body() createUserDto: CreateUserDto): Promise<SafeUserDto> {
-    return await this.userService.create(createUserDto);
+  async signUp(
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<SignUpResponseDto> {
+    return await this.authService.signUp(createUserDto);
   }
 }
