@@ -7,6 +7,7 @@ import {
   Param,
   Put,
   Request,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthenticatedRequest } from 'src/auth/interfaces/authenticated-request.interface';
@@ -39,11 +40,21 @@ export class UsersController {
     description: 'Use profile has been sucessfully deleted',
   })
   @ApiResponse({
+    status: 401,
+    description: 'User has no privileges to do that',
+  })
+  @ApiResponse({
     status: 404,
     description: 'User not found',
   })
-  async remove(@Request() req: AuthenticatedRequest): Promise<void> {
-    return await this.userService.remove(req.user.id);
+  async delete(
+    @Request() req: AuthenticatedRequest,
+    @Param('id') id: string,
+  ): Promise<void> {
+    if (req.user.id === id || req.user.role === 'admin') {
+      return await this.userService.remove(id);
+    }
+    throw new UnauthorizedException();
   }
 
   @Put()
@@ -52,13 +63,21 @@ export class UsersController {
     description: 'Use profile has been sucessfully updated',
   })
   @ApiResponse({
+    status: 401,
+    description: 'User has no privileges to do that',
+  })
+  @ApiResponse({
     status: 404,
     description: 'User not found',
   })
   async update(
     @Request() req: AuthenticatedRequest,
+    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<SafeUserDto> {
-    return await this.userService.update(req.user.id, updateUserDto);
+    if (req.user.id === id || req.user.role === 'admin') {
+      return await this.userService.update(id, updateUserDto);
+    }
+    throw new UnauthorizedException();
   }
 }

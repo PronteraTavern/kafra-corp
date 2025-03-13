@@ -12,13 +12,14 @@ describe('UsersService', () => {
   let usersService: UsersService;
   let userRepository: Repository<User>;
 
-  const mockUser: SafeUserDto = {
+  const mockUser: User = {
     id: '123e4567-e89b-12d3-a456-426614174000',
     avatar: 'https://randomavatar.com',
     first_name: 'John',
     last_name: 'Doe',
     email: 'john@example.com',
     role: 'user',
+    password_hash: 'hashedpassword',
     created_at: new Date(),
     updated_at: new Date(),
   };
