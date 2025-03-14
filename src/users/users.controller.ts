@@ -10,10 +10,10 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AuthenticatedRequest } from 'src/auth/interfaces/authenticated-request.interface';
 import { SafeUserDto } from './dtos/safe-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 
 @ApiBearerAuth()
 @Controller('users')

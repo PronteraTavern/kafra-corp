@@ -6,8 +6,8 @@ import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from './user.entity';
 import { SafeUserDto } from './dtos/safe-user.dto';
-import { AuthenticatedRequest } from 'src/auth/interfaces/authenticated-request.interface';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 
 describe('UserController', () => {
   let usersController: UsersController;

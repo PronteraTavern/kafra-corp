@@ -7,22 +7,18 @@ import {
   HttpCode,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { Public } from 'src/public.decorator';
 import { SignInResponseDto } from './dtos/signin-response.dto';
 import { AuthenticatedRequest } from './interfaces/authenticated-request.interface';
 import { LocalAuthGuard } from './local-auth.guard';
-import { CreateUserDto } from 'src/users/dtos/create-user.dto';
-import { UsersService } from 'src/users/users.service';
 import { SignInRequestDto } from './dtos/signin-request.dto';
 import { ApiResponse } from '@nestjs/swagger';
 import { SignUpResponseDto } from './dtos/signup-response.dto';
+import { Public } from '../public.decorator';
+import { CreateUserDto } from '../users/dtos/create-user.dto';
 
 @Controller()
 export class AuthController {
-  constructor(
-    private authService: AuthService,
-    private userService: UsersService,
-  ) {}
+  constructor(private authService: AuthService) {}
 
   @Public()
   @UseGuards(LocalAuthGuard)
