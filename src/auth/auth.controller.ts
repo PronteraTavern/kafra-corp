@@ -5,6 +5,8 @@ import {
   Request,
   Body,
   HttpCode,
+  Get,
+  Response,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInResponseDto } from './dtos/signin-response.dto';
@@ -15,8 +17,9 @@ import { ApiResponse } from '@nestjs/swagger';
 import { SignUpResponseDto } from './dtos/signup-response.dto';
 import { Public } from '../public.decorator';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
 
-@Controller()
+@Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
@@ -57,5 +60,20 @@ export class AuthController {
     @Body() createUserDto: CreateUserDto,
   ): Promise<SignUpResponseDto> {
     return await this.authService.signUp(createUserDto);
+  }
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/singin')
+  googleSingin() {}
+
+  @Public()
+  @UseGuards(GoogleAuthGuard)
+  @Get('google/callback')
+  async googleCallback(@Request() req: AuthenticatedRequest, @Response() res) {
+    const response = await this.authService.signIn(req.user.id);
+    console.log(response);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    res.redirect('http://localhost:3000/api#');
   }
 }

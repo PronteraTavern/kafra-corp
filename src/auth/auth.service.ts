@@ -12,6 +12,7 @@ import { SignUpResponseDto } from './dtos/signup-response.dto';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
 import { SafeUserDto } from '../users/dtos/safe-user.dto';
 import { UsersService } from '../users/users.service';
+import { GoogleUserDto } from './dtos/create-google-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -51,5 +52,26 @@ export class AuthService {
     const access_token = await this.jwtService.signAsync(payload);
 
     return { access_token, user_info: user };
+  }
+
+  async validateGoogleUser(googleUser: GoogleUserDto): Promise<SafeUserDto> {
+    const user = await this.usersService.findByEmail(googleUser.email);
+
+    // Returns user if it's already registered in the database
+    if (user) {
+      const { password_hash, ...userResult } = user;
+      return userResult;
+    }
+
+    // Creates a new use if it's not on the database yet
+    const newUser = await this.usersService.create({
+      avatar: googleUser.avatar,
+      first_name: googleUser.first_name,
+      last_name: googleUser.last_name,
+      email: googleUser.email,
+      password: '',
+    });
+
+    return newUser;
   }
 }
