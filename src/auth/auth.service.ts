@@ -39,7 +39,7 @@ export class AuthService {
     const { password_hash, ...userResult } = user;
 
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: await this.jwtService.signAsync(payload),
       user_info: userResult,
     };
   }
@@ -48,7 +48,7 @@ export class AuthService {
     const user = await this.usersService.create(createUserDto);
 
     const payload: JwtPayload = { id: user.id, role: user.role };
-    const access_token = this.jwtService.sign(payload);
+    const access_token = await this.jwtService.signAsync(payload);
 
     return { access_token, user_info: user };
   }

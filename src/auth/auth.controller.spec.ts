@@ -5,6 +5,8 @@ import { SignInResponseDto } from './dtos/signin-response.dto';
 import { SafeUserDto } from 'src/users/dtos/safe-user.dto';
 import { AuthenticatedRequest } from './interfaces/authenticated-request.interface';
 import { SignInRequestDto } from './dtos/signin-request.dto';
+import { SignUpResponseDto } from './dtos/signup-response.dto';
+import { CreateUserDto } from '../users/dtos/create-user.dto';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -51,7 +53,7 @@ describe('AuthController', () => {
   });
 
   describe('signin', () => {
-    it('should work with correct credentials', async () => {
+    it('should return an access token and user info on successful sign-in', async () => {
       const signInResponse: SignInResponseDto = {
         access_token: 'mocked-jwt',
         user_info: mockUser,
@@ -65,6 +67,23 @@ describe('AuthController', () => {
         signInResponse,
       );
     });
-    it('should throw Unauthroized work with inccorrect credentials', async () => {});
+  });
+  describe('signUp', () => {
+    it('should return an access token and user info on successful sign-up', async () => {
+      const mockResponse: SignUpResponseDto = {
+        access_token: 'mocked_token',
+        user_info: mockUser,
+      };
+      jest.spyOn(authService, 'signUp').mockResolvedValue(mockResponse);
+
+      const dto: CreateUserDto = {
+        ...mockUser,
+        password: '123456',
+      };
+      const result = await authController.signUp(dto);
+
+      expect(result).toEqual(mockResponse);
+      expect(jest.spyOn(authService, 'signUp')).toHaveBeenCalledWith(dto);
+    });
   });
 });

@@ -3,8 +3,6 @@ import { Test } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { User } from './user.entity';
 import { SafeUserDto } from './dtos/safe-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
@@ -52,18 +50,17 @@ describe('UserController', () => {
   } as AuthenticatedRequest;
 
   beforeEach(async () => {
-    const mockUserRepository = {
-      findOne: jest.fn(),
-      save: jest.fn(),
-    };
-
     const moduleRef = await Test.createTestingModule({
       controllers: [UsersController],
       providers: [
-        UsersService,
         {
-          provide: getRepositoryToken(User),
-          useValue: mockUserRepository,
+          provide: UsersService,
+          useValue: {
+            profile: jest.fn(),
+            create: jest.fn(),
+            remove: jest.fn(),
+            update: jest.fn(),
+          },
         },
       ],
     }).compile();
