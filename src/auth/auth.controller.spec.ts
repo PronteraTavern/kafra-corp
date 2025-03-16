@@ -7,6 +7,7 @@ import { AuthenticatedRequest } from './interfaces/authenticated-request.interfa
 import { SignInRequestDto } from './dtos/signin-request.dto';
 import { SignUpResponseDto } from './dtos/signup-response.dto';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
+import { BadRequestException } from '@nestjs/common';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -84,6 +85,31 @@ describe('AuthController', () => {
 
       expect(result).toEqual(mockResponse);
       expect(jest.spyOn(authService, 'signUp')).toHaveBeenCalledWith(dto);
+    });
+  });
+  describe('googleCallback', () => {
+    it('should succesfully redirect to another url and return jwt', async () => {
+      const signInResponse: SignInResponseDto = {
+        access_token: 'mocked-jwt',
+        user_info: mockUser,
+      };
+      jest.spyOn(authService, 'signIn').mockResolvedValue(signInResponse);
+      const result = await authController.googleCallback(mockUserRequest);
+
+      expect(result).toEqual({
+        url: `http://localhost:3000?token=mocked-jwt`,
+      });
+      expect(jest.spyOn(authService, 'signIn')).toHaveBeenCalledWith(
+        mockUserRequest.user.id,
+      );
+    });
+    it('should throw BadRequest if user doest not exist', async () => {
+      jest
+        .spyOn(authService, 'signIn')
+        .mockRejectedValue(new BadRequestException());
+      await expect(
+        authController.googleCallback(mockUserRequest),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

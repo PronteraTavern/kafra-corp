@@ -5,6 +5,7 @@ import { Test } from '@nestjs/testing';
 import { SafeUserDto } from '../users/dtos/safe-user.dto';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { GoogleUserDto } from './dtos/create-google-user.dto';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -129,6 +130,34 @@ describe('AuthService', () => {
           password: '123456',
         }),
       ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('validateGoogleUser', () => {
+    const googleUserDto: GoogleUserDto = {
+      avatar: mockUser.avatar,
+      email: mockUser.email,
+      first_name: mockUser.first_name,
+      last_name: mockUser.last_name,
+    };
+    it('should return a new created user', async () => {
+      jest.spyOn(userService, 'findByEmail').mockResolvedValue(null);
+      jest.spyOn(userService, 'create').mockResolvedValue(mockUser);
+      const result = await authService.validateGoogleUser(googleUserDto);
+      expect(result).toStrictEqual(mockUser);
+      expect(jest.spyOn(userService, 'create')).toHaveBeenCalledWith({
+        ...googleUserDto,
+        password: '',
+      });
+    });
+    it('should return an existing user', async () => {
+      jest
+        .spyOn(userService, 'findByEmail')
+        .mockResolvedValue({ ...mockUser, password_hash: '123456' });
+
+      const result = await authService.validateGoogleUser(googleUserDto);
+      expect(result).toStrictEqual(mockUser);
+      expect(jest.spyOn(userService, 'create')).toHaveBeenCalledTimes(0);
     });
   });
 });

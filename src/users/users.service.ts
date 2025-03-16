@@ -18,19 +18,19 @@ export class UsersService {
     private userRepository: Repository<User>,
   ) {}
 
-  findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string): Promise<User | null> {
     // Lucas - The logic above is to avoid a known issue in typeORM lib where findOneBy retrieves the first user db in case the input is null.
     // More info - https://github.com/typeorm/typeorm/issues/9316
-    if (!email) {
+    if (!email || email.trim() === '') {
       throw new BadRequestException();
     }
     return this.userRepository.findOneBy({ email });
   }
 
-  findById(id: string): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     // Lucas - The logic above is to avoid a known issue in typeORM lib where findOneBy retrieves the first user db in case the input is null.
     // More info - https://github.com/typeorm/typeorm/issues/9316
-    if (!id) {
+    if (!id || id.trim() === '') {
       throw new BadRequestException();
     }
     return this.userRepository.findOneBy({ id });
@@ -84,7 +84,7 @@ export class UsersService {
 
     // Only update the password if it's provided
     if (updatedUserDto.password) {
-      updatedUserDto.password = await bcrypt.hash(updatedUserDto.password, 10);
+      updatedUserDto.password = bcrypt.hashSync(updatedUserDto.password, 10);
       delete updatedUserDto.password; // Remove the password field before saving
     }
 

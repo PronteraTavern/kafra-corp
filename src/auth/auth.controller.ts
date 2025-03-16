@@ -6,7 +6,7 @@ import {
   Body,
   HttpCode,
   Get,
-  Response,
+  Redirect,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInResponseDto } from './dtos/signin-response.dto';
@@ -70,10 +70,11 @@ export class AuthController {
   @Public()
   @UseGuards(GoogleAuthGuard)
   @Get('google/callback')
-  async googleCallback(@Request() req: AuthenticatedRequest, @Response() res) {
+  @Redirect('http://localhost:3000/api')
+  async googleCallback(@Request() req: AuthenticatedRequest) {
     const response = await this.authService.signIn(req.user.id);
-    console.log(response);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    res.redirect('http://localhost:3000/api#');
+    return {
+      url: `http://localhost:3000?token=${response.access_token}`,
+    };
   }
 }

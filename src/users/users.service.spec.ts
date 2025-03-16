@@ -7,6 +7,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { SafeUserDto } from './dtos/safe-user.dto';
+import * as bcrypt from 'bcrypt';
 
 describe('UsersService', () => {
   let usersService: UsersService;
@@ -49,6 +50,42 @@ describe('UsersService', () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  describe('findByEmail', () => {
+    it('should return the user that was found', async () => {
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(mockUser);
+      expect(await usersService.findByEmail(mockUser.email)).toStrictEqual(
+        mockUser,
+      );
+    });
+    it('should return null if no user was found', async () => {
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(null);
+      expect(await usersService.findByEmail('random-email')).toBe(null);
+    });
+    it('should throw BadRequest if email is undefined or empty', async () => {
+      await expect(usersService.findByEmail('')).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(jest.spyOn(userRepository, 'findOneBy')).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('findById', () => {
+    it('should return the user that was found', async () => {
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(mockUser);
+      expect(await usersService.findById(mockUser.id)).toStrictEqual(mockUser);
+    });
+    it('should return null if no user was found', async () => {
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(null);
+      expect(await usersService.findById('random-id')).toBe(null);
+    });
+    it('should throw BadRequest if id is undefined', async () => {
+      await expect(usersService.findById('')).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(jest.spyOn(userRepository, 'findOneBy')).toHaveBeenCalledTimes(0);
+    });
   });
 
   describe('profile', () => {
@@ -177,6 +214,38 @@ describe('UsersService', () => {
       await expect(usersService.update('invalid-id', {})).rejects.toThrow(
         NotFoundException,
       );
+    });
+
+    it('should encrypt and update user password correctly', async () => {
+      const newPassword: string = 'abcdef';
+      const updateUserDto: UpdateUserDto = {
+        password: newPassword,
+      };
+
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(mockUser);
+      jest.spyOn(bcrypt, 'hashSync').mockReturnValue('abcdef-hashed');
+      jest
+        .spyOn(userRepository, 'save')
+        .mockResolvedValue({ ...mockUser, password_hash: 'abcdef-hashed' });
+
+      const expectedSafeUser: SafeUserDto = {
+        id: mockUser.id,
+        avatar: mockUser.avatar,
+        first_name: mockUser.first_name,
+        last_name: mockUser.last_name,
+        email: mockUser.email,
+        role: mockUser.role,
+        created_at: mockUser.created_at,
+        updated_at: mockUser.updated_at,
+      };
+      const result = await usersService.update(mockUser.id, updateUserDto);
+      expect(jest.spyOn(bcrypt, 'hashSync')).toHaveBeenCalledTimes(1);
+      expect(jest.spyOn(bcrypt, 'hashSync')).toHaveBeenCalledWith(
+        newPassword,
+        10,
+      );
+
+      expect(result).toEqual(expectedSafeUser);
     });
   });
 
