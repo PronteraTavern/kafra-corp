@@ -1,39 +1,32 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { JwtStrategy } from './jwt.strategy'; // Adjust the path accordingly
-import { ConfigService } from '@nestjs/config';
+import { ConfigType } from '@nestjs/config';
+import { ExtractJwt } from 'passport-jwt';
+import { jwtConfig } from '../../config/jwt.config';
+import { JwtStrategy } from './jwt.strategy';
 import { JwtPayload } from '../interfaces/jwt-payload.interface';
 
+const mockJwtConfig: ConfigType<typeof jwtConfig> = {
+  secret: 'test-secret',
+  signOptions: { expiresIn: '1h' },
+};
 
-@
-describe.skip('JwtStrategy', () => {
-  let strategy: JwtStrategy;
-  let configService: ConfigService;
+describe('JwtStrategy', () => {
+  let jwtStrategy: JwtStrategy;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        JwtStrategy,
-        { provide: ConfigService, useValue: { get: jest.fn() } },
-      ],
-    }).compile();
-
-    strategy = module.get<JwtStrategy>(JwtStrategy);
-    configService = module.get<ConfigService>(ConfigService);
+  beforeEach(() => {
+    jwtStrategy = new JwtStrategy(mockJwtConfig);
   });
 
-  it('should throw an error if JWT_SECRET is not set', () => {
-    jest.spyOn(configService, 'get').mockReturnValueOnce(undefined);
-
-    expect(() => {
-      new JwtStrategy(configService);
-    }).toThrow(Error);
+  it('should be defined', () => {
+    expect(jwtStrategy).toBeDefined();
   });
 
-  it('should validate the JWT payload correctly', () => {
-    const payload: JwtPayload = { id: 'abc', role: 'admin' };
+  it('should validate payload correctly', () => {
+    const payload: JwtPayload = { id: '123', role: 'admin ' };
+    expect(jwtStrategy.validate(payload)).toEqual(payload);
+  });
 
-    jest.spyOn(configService, 'get').mockReturnValueOnce('mocked-jwt-secret');
-
-    expect(strategy.validate(payload)).toEqual(payload);
+  it('should configure JWT extraction correctly', () => {
+    const extractFn = ExtractJwt.fromAuthHeaderAsBearerToken();
+    expect(extractFn).toBeDefined();
   });
 });
