@@ -8,6 +8,10 @@ import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { SafeUserDto } from './dtos/safe-user.dto';
 import * as bcrypt from 'bcrypt';
+import {
+  DEFAULT_MAX_PAGE_SIZE,
+  DEFAULT_PAGE_SIZE,
+} from '../utils/pagination.constants';
 
 describe('UsersService', () => {
   let usersService: UsersService;
@@ -250,47 +254,82 @@ describe('UsersService', () => {
   });
 
   describe('findAll', () => {
-    it('should return an array of safeusers', async () => {
-      const users: User[] = [
-        {
-          id: '123e4567-e89b-12d3-a456-426614174000',
-          first_name: 'John',
-          last_name: 'Doe',
-          email: 'john@example.com',
-          avatar: 'https://example.com/avatar1.png',
-          role: 'user',
-          password_hash: 'hashedpassword',
-          created_at: new Date(),
-          updated_at: new Date(),
-        },
-        {
-          id: '987e6543-e89b-12d3-a456-426614174111',
-          first_name: 'Jane',
-          last_name: 'Doe',
-          email: 'jane@example.com',
-          avatar: 'https://example.com/avatar2.png',
-          role: 'admin',
-          password_hash: 'hashedpassword',
-          created_at: new Date(),
-          updated_at: new Date(),
-        },
-      ];
+    const users: User[] = [
+      {
+        id: '123e4567-e89b-12d3-a456-426614174000',
+        first_name: 'John',
+        last_name: 'Doe',
+        email: 'john@example.com',
+        avatar: 'https://example.com/avatar1.png',
+        role: 'user',
+        password_hash: 'hashedpassword',
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        id: '987e6543-e89b-12d3-a456-426614174111',
+        first_name: 'Jane',
+        last_name: 'Doe',
+        email: 'jane@example.com',
+        avatar: 'https://example.com/avatar2.png',
+        role: 'admin',
+        password_hash: 'hashedpassword',
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+    ];
 
-      const safeUsers = users.map<SafeUserDto>((user) => {
-        const { password_hash, ...result } = user;
-        return result;
+    const safeUsers = users.map<SafeUserDto>((user) => {
+      const { password_hash, ...result } = user;
+      return result;
+    });
+
+    it('should return an array of safeusers with default page size', async () => {
+      jest.spyOn(userRepository, 'find').mockResolvedValue(users);
+
+      const result = await usersService.find({
+        limit: 0,
+        skip: 0,
       });
-
-      userRepository.find = jest.fn().mockResolvedValue(users);
-
-      const result = await usersService.findAll();
       expect(result).toEqual(safeUsers);
+      expect(jest.spyOn(userRepository, 'find')).toHaveBeenCalledWith({
+        skip: 0,
+        take: DEFAULT_PAGE_SIZE,
+      });
+    });
+
+    it('should return an array of safeusers with default page size if exceed page size request', async () => {
+      jest.spyOn(userRepository, 'find').mockResolvedValue(users);
+
+      const exceedPageSize = DEFAULT_MAX_PAGE_SIZE + 1;
+      const result = await usersService.find({
+        skip: 0,
+        limit: exceedPageSize,
+      });
+      expect(result).toEqual(safeUsers);
+      expect(jest.spyOn(userRepository, 'find')).toHaveBeenCalledWith({
+        skip: 0,
+        take: DEFAULT_PAGE_SIZE,
+      });
+    });
+
+    it('should return an array of safeusers with one element only', async () => {
+      jest.spyOn(userRepository, 'find').mockResolvedValue([users[0]]);
+      const result = await usersService.find({
+        skip: 0,
+        limit: 1,
+      });
+      expect(result).toEqual([safeUsers[0]]);
+      expect(jest.spyOn(userRepository, 'find')).toHaveBeenCalledWith({
+        skip: 0,
+        take: 1,
+      });
     });
 
     it('should return an empty array if no users exist', async () => {
       userRepository.find = jest.fn().mockResolvedValue([]);
 
-      const result = await usersService.findAll();
+      const result = await usersService.find({ limit: 0, skip: 2 });
       expect(result).toEqual([]);
     });
   });

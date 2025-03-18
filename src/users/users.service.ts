@@ -10,6 +10,12 @@ import { SafeUserDto } from './dtos/safe-user.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { PaginationDto } from '../utils/pagination.dto';
+import {
+  DEFAULT_MAX_PAGE_SIZE,
+  DEFAULT_OFFSET,
+  DEFAULT_PAGE_SIZE,
+} from '../utils/pagination.constants';
 
 @Injectable()
 export class UsersService {
@@ -97,8 +103,21 @@ export class UsersService {
     return result;
   }
 
-  async findAll(): Promise<SafeUserDto[]> {
-    const users = await this.userRepository.find();
+  async find(paginationDto: PaginationDto): Promise<SafeUserDto[]> {
+    let limit: number;
+    if (
+      paginationDto.limit > DEFAULT_MAX_PAGE_SIZE ||
+      paginationDto.limit == 0
+    ) {
+      limit = DEFAULT_PAGE_SIZE;
+    } else {
+      limit = paginationDto.limit;
+    }
+
+    const users = await this.userRepository.find({
+      skip: paginationDto.skip,
+      take: limit,
+    });
     const safeUsers = users.map<SafeUserDto>((user) => {
       const { password_hash, ...result } = user;
       return result;
