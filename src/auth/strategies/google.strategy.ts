@@ -1,29 +1,22 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { AuthService } from '../auth.service';
 import { GooglePayload } from '../interfaces/google-payload.interface';
+import { googleOAuthConfig } from '../../config/google-oauth.config';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private configService: ConfigService,
+    @Inject(googleOAuthConfig.KEY)
+    private googleConfig: ConfigType<typeof googleOAuthConfig>,
     private authService: AuthService,
   ) {
-    // Lucas - This will be changed for the appropriate implementation
-    const clientID = configService.get<string>('GOOGLE_CLIENT_ID');
-    const clientSecret = configService.get<string>('GOOGLE_SECRET');
-    const callbackURL = configService.get<string>('GOOGLE_CALLBACK_URL');
-    if (!clientID || !clientSecret || !callbackURL) {
-      throw new Error(
-        'You need to initialize env variables for GoogleStrategy',
-      );
-    }
     super({
-      clientID: clientID,
-      clientSecret: clientSecret,
-      callbackURL: callbackURL,
+      clientID: googleConfig.clientId,
+      clientSecret: googleConfig.secret,
+      callbackURL: googleConfig.callbackUrl,
       scope: ['email', 'profile'],
     });
   }

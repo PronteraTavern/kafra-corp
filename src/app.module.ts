@@ -3,30 +3,25 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { User } from './users/user.entity';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
+import { validationSchema } from './config/config.validation';
+import { databaseConfig } from './config/database.config';
+import { DatabaseModule } from './database/database.module';
+import { appConfig } from './config/app.config';
+import { jwtConfig } from './config/jwt.config';
+import { googleOAuthConfig } from './config/google-oauth.config';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema,
+      load: [appConfig, databaseConfig, jwtConfig, googleOAuthConfig],
+    }),
     AuthModule,
     UsersModule,
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 54322),
-        username: configService.get<string>('DB_USERNAME', 'postgres'),
-        password: configService.get<string>('DB_PASSWORD', 'postgres'),
-        database: configService.get<string>('DB_NAME', 'postgres'),
-        entities: [User],
-        synchronize: false,
-      }),
-    }),
+    DatabaseModule,
   ],
 
   providers: [
