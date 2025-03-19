@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AdminController } from './admin.controller';
 import { AdminService } from './admin.service';
 import { SafeUserDto } from '../users/dtos/safe-user.dto';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 describe('AdminService', () => {
   let adminController: AdminController;
@@ -52,27 +53,24 @@ describe('AdminService', () => {
         updated_at: new Date(),
       },
     ];
+    const result: Pagination<SafeUserDto> = {
+      items: users,
+      meta: {
+        currentPage: 1,
+        itemCount: 2,
+        itemsPerPage: 10,
+      },
+    };
     it('should return a list of users', async () => {
-      jest.spyOn(adminService, 'listUsers').mockResolvedValue(users);
+      jest.spyOn(adminService, 'listUsers').mockResolvedValue(result);
 
-      expect(await adminController.listUsers({ skip: 0, limit: 2 })).toBe(
-        users,
+      expect(await adminController.listUsers({ limit: 10, page: 1 })).toBe(
+        result,
       );
-      expect(jest.spyOn(adminService, 'listUsers')).toHaveBeenCalledWith({
-        skip: 0,
-        limit: 2,
-      });
-    });
-    it('should return a list of empty users', async () => {
-      jest.spyOn(adminService, 'listUsers').mockResolvedValue([]);
-
-      expect(await adminController.listUsers({ skip: 0, limit: 0 })).toEqual(
-        [],
+      expect(jest.spyOn(adminService, 'listUsers')).toHaveBeenCalledWith(
+        { limit: 10, page: 1 },
+        '/admin',
       );
-      expect(jest.spyOn(adminService, 'listUsers')).toHaveBeenCalledWith({
-        skip: 0,
-        limit: 0,
-      });
     });
   });
 });

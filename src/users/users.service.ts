@@ -10,12 +10,12 @@ import { SafeUserDto } from './dtos/safe-user.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { PaginationDto } from '../utils/pagination.dto';
+
 import {
-  DEFAULT_MAX_PAGE_SIZE,
-  DEFAULT_OFFSET,
-  DEFAULT_PAGE_SIZE,
-} from '../utils/pagination.constants';
+  IPaginationOptions,
+  paginate,
+  Pagination,
+} from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class UsersService {
@@ -103,26 +103,21 @@ export class UsersService {
     return result;
   }
 
-  async find(paginationDto: PaginationDto): Promise<SafeUserDto[]> {
-    let limit: number;
-    if (
-      paginationDto.limit > DEFAULT_MAX_PAGE_SIZE ||
-      paginationDto.limit == 0
-    ) {
-      limit = DEFAULT_PAGE_SIZE;
-    } else {
-      limit = paginationDto.limit;
-    }
-
-    const users = await this.userRepository.find({
-      skip: paginationDto.skip,
-      take: limit,
-    });
-    const safeUsers = users.map<SafeUserDto>((user) => {
-      const { password_hash, ...result } = user;
-      return result;
-    });
-    return safeUsers;
+  async find(options: IPaginationOptions): Promise<Pagination<SafeUserDto>> {
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('users')
+      .select([
+        'users.id',
+        'users.email',
+        'users.created_at',
+        'users.avatar',
+        'users.first_name',
+        'users.last_name',
+        'users.role',
+        'users.updated_at',
+      ])
+      .orderBy('users.created_at', 'DESC');
+    return paginate<SafeUserDto>(queryBuilder, options);
   }
 
   async updateRole(id: string, newRole: string): Promise<SafeUserDto> {

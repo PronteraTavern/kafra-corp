@@ -9,9 +9,14 @@ import { UpdateUserDto } from './dtos/update-user.dto';
 import { SafeUserDto } from './dtos/safe-user.dto';
 import * as bcrypt from 'bcrypt';
 import {
-  DEFAULT_MAX_PAGE_SIZE,
-  DEFAULT_PAGE_SIZE,
-} from '../utils/pagination.constants';
+  IPaginationOptions,
+  paginate,
+  Pagination,
+} from 'nestjs-typeorm-paginate';
+
+jest.mock('nestjs-typeorm-paginate', () => ({
+  paginate: jest.fn(),
+}));
 
 describe('UsersService', () => {
   let usersService: UsersService;
@@ -38,6 +43,13 @@ describe('UsersService', () => {
   };
 
   beforeEach(async () => {
+    const mockQueryBuilder = {
+      select: jest.fn().mockReturnThis(),
+      orderBy: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      getMany: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
@@ -50,6 +62,9 @@ describe('UsersService', () => {
 
     usersService = module.get<UsersService>(UsersService);
     userRepository = module.get<Repository<User>>(getRepositoryToken(User));
+    userRepository.createQueryBuilder = jest
+      .fn()
+      .mockReturnValue(mockQueryBuilder);
   });
 
   afterEach(() => {
@@ -253,8 +268,8 @@ describe('UsersService', () => {
     });
   });
 
-  describe('findAll', () => {
-    const users: User[] = [
+  describe('find', () => {
+    const users: SafeUserDto[] = [
       {
         id: '123e4567-e89b-12d3-a456-426614174000',
         first_name: 'John',
@@ -262,7 +277,6 @@ describe('UsersService', () => {
         email: 'john@example.com',
         avatar: 'https://example.com/avatar1.png',
         role: 'user',
-        password_hash: 'hashedpassword',
         created_at: new Date(),
         updated_at: new Date(),
       },
@@ -273,64 +287,51 @@ describe('UsersService', () => {
         email: 'jane@example.com',
         avatar: 'https://example.com/avatar2.png',
         role: 'admin',
-        password_hash: 'hashedpassword',
         created_at: new Date(),
         updated_at: new Date(),
       },
     ];
 
-    const safeUsers = users.map<SafeUserDto>((user) => {
-      const { password_hash, ...result } = user;
-      return result;
+    const result: Pagination<SafeUserDto> = {
+      items: users,
+      meta: {
+        currentPage: 1,
+        itemCount: 2,
+        itemsPerPage: 10,
+      },
+    };
+    it('should call paginate with the correct query builder and options', async () => {
+      (paginate as jest.Mock).mockResolvedValue(result);
+      const paginationOptions: IPaginationOptions = { page: 1, limit: 10 };
+
+      await usersService.find(paginationOptions);
+
+      expect(
+        jest.spyOn(userRepository, 'createQueryBuilder'),
+      ).toHaveBeenCalledWith('users');
+      expect(paginate).toHaveBeenCalledWith(
+        expect.any(Object),
+        paginationOptions,
+      );
+    });
+    it('should return the paginated result', async () => {
+      (paginate as jest.Mock).mockResolvedValue(result);
+      const paginationOptions: IPaginationOptions = { page: 1, limit: 10 };
+
+      const response = await usersService.find(paginationOptions);
+      expect(response).toEqual(result);
     });
 
-    it('should return an array of safeusers with default page size', async () => {
-      jest.spyOn(userRepository, 'find').mockResolvedValue(users);
+    it('should handle empty results correctly', async () => {
+      const emptyResult: Pagination<SafeUserDto> = {
+        items: [],
+        meta: { currentPage: 1, itemCount: 0, itemsPerPage: 10 },
+      };
+      (paginate as jest.Mock).mockResolvedValue(emptyResult);
+      const paginationOptions: IPaginationOptions = { page: 1, limit: 10 };
 
-      const result = await usersService.find({
-        limit: 0,
-        skip: 0,
-      });
-      expect(result).toEqual(safeUsers);
-      expect(jest.spyOn(userRepository, 'find')).toHaveBeenCalledWith({
-        skip: 0,
-        take: DEFAULT_PAGE_SIZE,
-      });
-    });
-
-    it('should return an array of safeusers with default page size if exceed page size request', async () => {
-      jest.spyOn(userRepository, 'find').mockResolvedValue(users);
-
-      const exceedPageSize = DEFAULT_MAX_PAGE_SIZE + 1;
-      const result = await usersService.find({
-        skip: 0,
-        limit: exceedPageSize,
-      });
-      expect(result).toEqual(safeUsers);
-      expect(jest.spyOn(userRepository, 'find')).toHaveBeenCalledWith({
-        skip: 0,
-        take: DEFAULT_PAGE_SIZE,
-      });
-    });
-
-    it('should return an array of safeusers with one element only', async () => {
-      jest.spyOn(userRepository, 'find').mockResolvedValue([users[0]]);
-      const result = await usersService.find({
-        skip: 0,
-        limit: 1,
-      });
-      expect(result).toEqual([safeUsers[0]]);
-      expect(jest.spyOn(userRepository, 'find')).toHaveBeenCalledWith({
-        skip: 0,
-        take: 1,
-      });
-    });
-
-    it('should return an empty array if no users exist', async () => {
-      userRepository.find = jest.fn().mockResolvedValue([]);
-
-      const result = await usersService.find({ limit: 0, skip: 2 });
-      expect(result).toEqual([]);
+      const response = await usersService.find(paginationOptions);
+      expect(response.items).toHaveLength(0);
     });
   });
 

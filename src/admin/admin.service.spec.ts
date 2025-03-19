@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AdminService } from './admin.service';
 import { UsersService } from '../users/users.service';
 import { SafeUserDto } from '../users/dtos/safe-user.dto';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 describe('AdminService', () => {
   let adminService: AdminService;
@@ -51,22 +52,24 @@ describe('AdminService', () => {
         updated_at: new Date(),
       },
     ];
+    const result: Pagination<SafeUserDto> = {
+      items: users,
+      meta: {
+        currentPage: 1,
+        itemCount: 2,
+        itemsPerPage: 10,
+      },
+    };
     it('should find a list of users', async () => {
-      jest.spyOn(usersService, 'find').mockResolvedValue(users);
+      jest.spyOn(usersService, 'find').mockResolvedValue(result);
 
-      expect(await adminService.listUsers({ skip: 0, limit: 2 })).toBe(users);
+      expect(
+        await adminService.listUsers({ limit: 10, page: 1 }, 'admin/'),
+      ).toBe(result);
       expect(jest.spyOn(usersService, 'find')).toHaveBeenCalledWith({
-        skip: 0,
-        limit: 2,
-      });
-    });
-    it('should find a list of empty users', async () => {
-      jest.spyOn(usersService, 'find').mockResolvedValue([]);
-
-      expect(await adminService.listUsers({ skip: 0, limit: 0 })).toEqual([]);
-      expect(jest.spyOn(usersService, 'find')).toHaveBeenCalledWith({
-        skip: 0,
-        limit: 0,
+        page: 1,
+        limit: 10,
+        route: 'admin/',
       });
     });
   });
