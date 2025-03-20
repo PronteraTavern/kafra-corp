@@ -10,7 +10,10 @@ export const validationSchema = Joi.object({
   DB_PASSWORD: Joi.string().required(),
 
   JWT_SECRET: Joi.string().required(),
-  JWT_EXPIRATION: Joi.string().default('360s'),
+  JWT_EXPIRATION: Joi.string().required(),
+
+  REFRESH_JWT_SECRET: Joi.string().required(),
+  REFRESH_JWT_EXPIRATION: Joi.string().required(),
 
   GOOGLE_CLIENT_ID: Joi.string().required(),
   GOOGLE_SECRET: Joi.string().required(),

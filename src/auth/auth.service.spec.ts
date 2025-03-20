@@ -6,6 +6,8 @@ import { SafeUserDto } from '../users/dtos/safe-user.dto';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { GoogleUserDto } from './dtos/create-google-user.dto';
+import { refreshJwtConfig } from '../config/refresh-jwt.config';
+import { ConfigType } from '@nestjs/config';
 
 describe('AuthService', () => {
   let authService: AuthService;
@@ -22,6 +24,10 @@ describe('AuthService', () => {
     created_at: new Date(),
     updated_at: new Date(),
   };
+  const mockRefreshJwtConfig: ConfigType<typeof refreshJwtConfig> = {
+    secret: 'test-secret',
+    expiresIn: '1h',
+  };
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -34,6 +40,10 @@ describe('AuthService', () => {
             findById: jest.fn(),
             create: jest.fn(),
           },
+        },
+        {
+          provide: refreshJwtConfig.KEY,
+          useValue: mockRefreshJwtConfig,
         },
         {
           provide: JwtService,
@@ -87,12 +97,17 @@ describe('AuthService', () => {
       jest
         .spyOn(userService, 'findById')
         .mockResolvedValue({ ...mockUser, password_hash: '123456' });
-      const jwt: string = 'abcdef';
-      jest.spyOn(jwtService, 'signAsync').mockResolvedValue(jwt);
+      const acess_token: string = 'abcdef';
+      const refresh_token: string = 'refresh-token';
+      jest
+        .spyOn(jwtService, 'signAsync')
+        .mockResolvedValueOnce(acess_token)
+        .mockResolvedValueOnce(refresh_token);
 
       const result = await authService.signIn(mockUser.id);
       expect(result).toEqual({
-        access_token: jwt,
+        access_token: acess_token,
+        refresh_token: refresh_token,
         user_info: mockUser,
       });
     });
@@ -107,15 +122,20 @@ describe('AuthService', () => {
   describe('signUp', () => {
     it('should return a SignUpResponse if credentials are valid', async () => {
       jest.spyOn(userService, 'create').mockResolvedValue(mockUser);
-      const jwt: string = 'abcdef';
-      jest.spyOn(jwtService, 'signAsync').mockResolvedValue(jwt);
+      const acess_token: string = 'abcdef';
+      const refresh_token: string = 'refresh-token';
+      jest
+        .spyOn(jwtService, 'signAsync')
+        .mockResolvedValueOnce(acess_token)
+        .mockResolvedValueOnce(refresh_token);
 
       const result = await authService.signUp({
         ...mockUser,
         password: '123456',
       });
       expect(result).toEqual({
-        access_token: jwt,
+        access_token: acess_token,
+        refresh_token: refresh_token,
         user_info: mockUser,
       });
     });
@@ -158,6 +178,18 @@ describe('AuthService', () => {
       const result = await authService.validateGoogleUser(googleUserDto);
       expect(result).toStrictEqual(mockUser);
       expect(jest.spyOn(userService, 'create')).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('refreshToken', () => {
+    it('should refresh token sucessfully', async () => {
+      jest.spyOn(jwtService, 'signAsync').mockResolvedValue('some-token');
+      expect(
+        await authService.refreshToken(mockUser.id, mockUser.role),
+      ).toEqual({
+        id: mockUser.id,
+        access_token: 'some-token',
+      });
     });
   });
 });

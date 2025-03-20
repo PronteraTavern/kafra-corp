@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -13,12 +14,17 @@ import { CreateUserDto } from '../users/dtos/create-user.dto';
 import { SafeUserDto } from '../users/dtos/safe-user.dto';
 import { UsersService } from '../users/users.service';
 import { GoogleUserDto } from './dtos/create-google-user.dto';
+import { refreshJwtConfig } from '../config/refresh-jwt.config';
+import { ConfigType } from '@nestjs/config';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    @Inject(refreshJwtConfig.KEY)
+    private refreshTokenConfig: ConfigType<typeof refreshJwtConfig>,
   ) {}
 
   async validateUser(email: string, password: string): Promise<SafeUserDto> {
@@ -38,9 +44,12 @@ export class AuthService {
     }
     const payload: JwtPayload = { id: user.id, role: user.role };
     const { password_hash, ...userResult } = user;
-
     return {
       access_token: await this.jwtService.signAsync(payload),
+      refresh_token: await this.jwtService.signAsync(
+        payload,
+        this.refreshTokenConfig,
+      ),
       user_info: userResult,
     };
   }
@@ -50,8 +59,12 @@ export class AuthService {
 
     const payload: JwtPayload = { id: user.id, role: user.role };
     const access_token = await this.jwtService.signAsync(payload);
+    const refreshToken = await this.jwtService.signAsync(
+      payload,
+      this.refreshTokenConfig,
+    );
 
-    return { access_token, user_info: user };
+    return { access_token, refresh_token: refreshToken, user_info: user };
   }
 
   async validateGoogleUser(googleUser: GoogleUserDto): Promise<SafeUserDto> {
@@ -73,5 +86,14 @@ export class AuthService {
     });
 
     return newUser;
+  }
+
+  async refreshToken(id: string, role: string): Promise<RefreshTokenDto> {
+    const payload: JwtPayload = { id, role };
+    const token = await this.jwtService.signAsync(payload);
+    return {
+      id,
+      access_token: token,
+    };
   }
 }

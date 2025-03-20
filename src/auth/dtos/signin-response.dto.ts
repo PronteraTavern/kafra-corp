@@ -6,6 +6,10 @@ export class SignInResponseDto {
   @IsNotEmpty()
   access_token: string;
 
+  @IsString()
+  @IsNotEmpty()
+  refresh_token: string;
+
   @IsNotEmpty()
   user_info: SafeUserDto;
 }

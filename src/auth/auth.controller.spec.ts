@@ -8,6 +8,7 @@ import { SignInRequestDto } from './dtos/signin-request.dto';
 import { SignUpResponseDto } from './dtos/signup-response.dto';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
 import { BadRequestException } from '@nestjs/common';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
 
 describe('AuthController', () => {
   let authController: AuthController;
@@ -40,6 +41,7 @@ describe('AuthController', () => {
           useValue: {
             signIn: jest.fn(),
             signUp: jest.fn(),
+            refreshToken: jest.fn(),
           },
         },
       ],
@@ -57,6 +59,7 @@ describe('AuthController', () => {
     it('should return an access token and user info on successful sign-in', async () => {
       const signInResponse: SignInResponseDto = {
         access_token: 'mocked-jwt',
+        refresh_token: 'refresh-token',
         user_info: mockUser,
       };
       const signInRequest: SignInRequestDto = {
@@ -73,6 +76,7 @@ describe('AuthController', () => {
     it('should return an access token and user info on successful sign-up', async () => {
       const mockResponse: SignUpResponseDto = {
         access_token: 'mocked_token',
+        refresh_token: 'refresh-token',
         user_info: mockUser,
       };
       jest.spyOn(authService, 'signUp').mockResolvedValue(mockResponse);
@@ -91,6 +95,7 @@ describe('AuthController', () => {
     it('should succesfully redirect to another url and return jwt', async () => {
       const signInResponse: SignInResponseDto = {
         access_token: 'mocked-jwt',
+        refresh_token: 'refresh-token',
         user_info: mockUser,
       };
       jest.spyOn(authService, 'signIn').mockResolvedValue(signInResponse);
@@ -110,6 +115,22 @@ describe('AuthController', () => {
       await expect(
         authController.googleCallback(mockUserRequest),
       ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('refreshToken', () => {
+    it('should return an access token and user info on successful refreshToken', async () => {
+      const refreshTokenDto: RefreshTokenDto = {
+        id: mockUser.id,
+        access_token: 'access_token',
+      };
+
+      jest
+        .spyOn(authService, 'refreshToken')
+        .mockResolvedValue(refreshTokenDto);
+      expect(await authController.refreshToken(mockUserRequest)).toBe(
+        refreshTokenDto,
+      );
     });
   });
 });

@@ -13,11 +13,13 @@ import { SignInResponseDto } from './dtos/signin-response.dto';
 import { AuthenticatedRequest } from './interfaces/authenticated-request.interface';
 import { LocalAuthGuard } from './local-auth.guard';
 import { SignInRequestDto } from './dtos/signin-request.dto';
-import { ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { SignUpResponseDto } from './dtos/signup-response.dto';
 import { Public } from '../public.decorator';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
+import { RefreshJwtAuthGuard } from './guards/refresh-jwt-auth.guard';
+import { RefreshTokenDto } from './dtos/refresh-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -76,5 +78,22 @@ export class AuthController {
     return {
       url: `http://localhost:3000?token=${response.access_token}`,
     };
+  }
+
+  @Post('refresh')
+  @ApiResponse({
+    status: 200,
+    description: 'Successful refresh',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @UseGuards(RefreshJwtAuthGuard)
+  @ApiBearerAuth()
+  async refreshToken(
+    @Request() req: AuthenticatedRequest,
+  ): Promise<RefreshTokenDto> {
+    return await this.authService.refreshToken(req.user.id, req.user.role);
   }
 }

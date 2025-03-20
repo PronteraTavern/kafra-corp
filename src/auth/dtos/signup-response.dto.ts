@@ -6,6 +6,10 @@ export class SignUpResponseDto {
   @IsNotEmpty()
   access_token: string;
 
+  @IsString()
+  @IsNotEmpty()
+  refresh_token: string;
+
   @IsNotEmpty()
   user_info: SafeUserDto;
 }
