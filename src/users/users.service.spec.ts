@@ -28,7 +28,6 @@ describe('UsersService', () => {
     first_name: 'John',
     last_name: 'Doe',
     email: 'john@example.com',
-    role: 'user',
     password_hash: 'hashedpassword',
     created_at: new Date(),
     updated_at: new Date(),
@@ -116,7 +115,6 @@ describe('UsersService', () => {
         first_name: mockUser.first_name,
         last_name: mockUser.last_name,
         email: mockUser.email,
-        role: mockUser.role,
         created_at: mockUser.created_at,
         updated_at: mockUser.updated_at,
       };
@@ -148,7 +146,6 @@ describe('UsersService', () => {
         avatar: createUserDto.avatar,
         first_name: createUserDto.first_name,
         last_name: createUserDto.last_name,
-        role: 'user',
         email: createUserDto.email,
         password_hash: 'hashedpassword',
       });
@@ -159,7 +156,6 @@ describe('UsersService', () => {
         avatar: createUserDto.avatar,
         first_name: createUserDto.first_name,
         last_name: createUserDto.last_name,
-        role: 'user',
         email: createUserDto.email,
         password_hash: 'hashedpassword',
         created_at: random_date,
@@ -172,7 +168,6 @@ describe('UsersService', () => {
         avatar: createUserDto.avatar,
         first_name: createUserDto.first_name,
         last_name: createUserDto.last_name,
-        role: 'user',
         email: createUserDto.email,
         created_at: random_date,
         updated_at: random_date,
@@ -219,7 +214,6 @@ describe('UsersService', () => {
         first_name: updated_name,
         last_name: mockUser.last_name,
         email: mockUser.email,
-        role: mockUser.role,
         created_at: mockUser.created_at,
         updated_at: mockUser.updated_at,
       };
@@ -253,7 +247,6 @@ describe('UsersService', () => {
         first_name: mockUser.first_name,
         last_name: mockUser.last_name,
         email: mockUser.email,
-        role: mockUser.role,
         created_at: mockUser.created_at,
         updated_at: mockUser.updated_at,
       };
@@ -276,7 +269,6 @@ describe('UsersService', () => {
         last_name: 'Doe',
         email: 'john@example.com',
         avatar: 'https://example.com/avatar1.png',
-        role: 'user',
         created_at: new Date(),
         updated_at: new Date(),
       },
@@ -286,7 +278,6 @@ describe('UsersService', () => {
         last_name: 'Doe',
         email: 'jane@example.com',
         avatar: 'https://example.com/avatar2.png',
-        role: 'admin',
         created_at: new Date(),
         updated_at: new Date(),
       },
@@ -332,40 +323,6 @@ describe('UsersService', () => {
 
       const response = await usersService.find(paginationOptions);
       expect(response.items).toHaveLength(0);
-    });
-  });
-
-  describe('updateRole', () => {
-    it('should update the user role and return a SafeUserDto', async () => {
-      const user: User = {
-        id: '123e4567-e89b-12d3-a456-426614174000',
-        first_name: 'John',
-        last_name: 'Doe',
-        email: 'john@example.com',
-        avatar: 'https://example.com/avatar1.png',
-        role: 'user',
-        password_hash: 'hashedpassword',
-        created_at: new Date(),
-        updated_at: new Date(),
-      };
-
-      userRepository.findOneBy = jest.fn().mockResolvedValue(user);
-      userRepository.save = jest.fn().mockResolvedValue({
-        ...user,
-        role: 'admin',
-      });
-
-      const result = await usersService.updateRole(user.id, 'admin');
-
-      expect(result.role).toEqual('admin');
-    });
-
-    it('should throw NotFoundException if user does not exist', async () => {
-      userRepository.findOneBy = jest.fn().mockResolvedValue(null);
-
-      await expect(
-        usersService.updateRole('invalid-id', 'admin'),
-      ).rejects.toThrow(NotFoundException);
     });
   });
 });

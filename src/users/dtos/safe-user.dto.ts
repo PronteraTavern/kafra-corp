@@ -32,10 +32,6 @@ export class SafeUserDto {
   @IsEmail()
   email: string;
 
-  @IsNotEmpty()
-  @IsString()
-  role: string;
-
   @IsDate()
   created_at: Date;
 

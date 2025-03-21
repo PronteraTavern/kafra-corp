@@ -20,7 +20,6 @@ describe('AuthService', () => {
     first_name: 'John',
     last_name: 'Doe',
     email: 'john@example.com',
-    role: 'user',
     created_at: new Date(),
     updated_at: new Date(),
   };
@@ -184,9 +183,7 @@ describe('AuthService', () => {
   describe('refreshToken', () => {
     it('should refresh token sucessfully', async () => {
       jest.spyOn(jwtService, 'signAsync').mockResolvedValue('some-token');
-      expect(
-        await authService.refreshToken(mockUser.id, mockUser.role),
-      ).toEqual({
+      expect(await authService.refreshToken(mockUser.id)).toEqual({
         id: mockUser.id,
         access_token: 'some-token',
       });

@@ -113,22 +113,9 @@ export class UsersService {
         'users.avatar',
         'users.first_name',
         'users.last_name',
-        'users.role',
         'users.updated_at',
       ])
       .orderBy('users.created_at', 'DESC');
     return paginate<SafeUserDto>(queryBuilder, options);
-  }
-
-  async updateRole(id: string, newRole: string): Promise<SafeUserDto> {
-    const user = await this.findById(id);
-    if (!user) {
-      throw new NotFoundException();
-    }
-    user.role = newRole;
-    const updatedUser: User = await this.userRepository.save(user);
-    const { password_hash, ...result } = updatedUser;
-
-    return result;
   }
 }

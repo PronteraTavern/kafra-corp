@@ -42,7 +42,7 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException();
     }
-    const payload: JwtPayload = { id: user.id, role: user.role };
+    const payload: JwtPayload = { id: user.id };
     const { password_hash, ...userResult } = user;
     return {
       access_token: await this.jwtService.signAsync(payload),
@@ -57,7 +57,7 @@ export class AuthService {
   async signUp(createUserDto: CreateUserDto): Promise<SignUpResponseDto> {
     const user = await this.usersService.create(createUserDto);
 
-    const payload: JwtPayload = { id: user.id, role: user.role };
+    const payload: JwtPayload = { id: user.id };
     const access_token = await this.jwtService.signAsync(payload);
     const refreshToken = await this.jwtService.signAsync(
       payload,
@@ -88,8 +88,8 @@ export class AuthService {
     return newUser;
   }
 
-  async refreshToken(id: string, role: string): Promise<RefreshTokenDto> {
-    const payload: JwtPayload = { id, role };
+  async refreshToken(id: string): Promise<RefreshTokenDto> {
+    const payload: JwtPayload = { id };
     const token = await this.jwtService.signAsync(payload);
     return {
       id,

@@ -54,7 +54,7 @@ export class UsersController {
     @Request() req: AuthenticatedRequest,
     @Param('id') id: string,
   ): Promise<void> {
-    if (req.user.id === id || req.user.role === 'admin') {
+    if (req.user.id === id) {
       return await this.userService.remove(id);
     }
     throw new UnauthorizedException();
@@ -78,7 +78,7 @@ export class UsersController {
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<SafeUserDto> {
-    if (req.user.id === id || req.user.role === 'admin') {
+    if (req.user.id === id) {
       return await this.userService.update(id, updateUserDto);
     }
     throw new UnauthorizedException();

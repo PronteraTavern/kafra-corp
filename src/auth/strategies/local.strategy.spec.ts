@@ -14,7 +14,6 @@ describe('LocalStrategy', () => {
     first_name: 'John',
     last_name: 'Doe',
     email: 'john@example.com',
-    role: 'user',
     created_at: new Date(),
     updated_at: new Date(),
   };

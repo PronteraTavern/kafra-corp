@@ -20,7 +20,6 @@ describe('AuthController', () => {
     first_name: 'John',
     last_name: 'Doe',
     email: 'john@example.com',
-    role: 'user',
     created_at: new Date(),
     updated_at: new Date(),
   };
@@ -28,7 +27,6 @@ describe('AuthController', () => {
   const mockUserRequest: AuthenticatedRequest = {
     user: {
       id: '123e4567-e89b-12d3-a456-426614174000',
-      role: 'user',
     },
   } as AuthenticatedRequest;
 

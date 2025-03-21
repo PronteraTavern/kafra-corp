@@ -17,7 +17,6 @@ describe('UserController', () => {
     first_name: 'John',
     last_name: 'Doe',
     email: 'john@example.com',
-    role: 'user',
     created_at: new Date(),
     updated_at: new Date(),
   };
@@ -35,17 +34,9 @@ describe('UserController', () => {
     updated_at: new Date(),
   };
 
-  const mockAdminRequest: AuthenticatedRequest = {
-    user: {
-      id: 'mock-user-id',
-      role: 'admin',
-    },
-  } as AuthenticatedRequest;
-
   const mockUserRequest: AuthenticatedRequest = {
     user: {
       id: '123e4567-e89b-12d3-a456-426614174000',
-      role: 'user',
     },
   } as AuthenticatedRequest;
 
@@ -112,29 +103,7 @@ describe('UserController', () => {
     });
   });
 
-  it('should delete user as an admin', async () => {
-    jest.spyOn(userService, 'remove').mockResolvedValue(undefined);
-    const response = await usersController.delete(
-      mockAdminRequest,
-      mockUser.id,
-    );
-    expect(jest.spyOn(userService, 'remove')).toHaveBeenCalledWith(mockUser.id);
-    expect(response).toBeUndefined();
-  });
-
-  it('should throw NotFoundException if user doesnt exist', async () => {
-    jest
-      .spyOn(userService, 'remove')
-      .mockRejectedValue(new NotFoundException());
-
-    await expect(
-      usersController.delete(mockAdminRequest, 'dummy-id'),
-    ).rejects.toThrow(NotFoundException);
-
-    expect(jest.spyOn(userService, 'remove')).toHaveBeenCalledWith('dummy-id');
-  });
-
-  it('should throw UnauthorizedException if not admin neither own user', async () => {
+  it('should throw UnauthorizedException if not own user', async () => {
     await expect(
       usersController.delete(mockUserRequest, 'dummy-id'),
     ).rejects.toThrow(UnauthorizedException);
@@ -159,39 +128,7 @@ describe('UserController', () => {
     });
   });
 
-  it('should update user as an admin', async () => {
-    jest.spyOn(userService, 'update').mockResolvedValue(updatedMockUser);
-
-    const result = await usersController.update(
-      mockAdminRequest,
-      mockUser.id,
-      updateUserDto,
-    );
-    expect(result).toBe(updatedMockUser);
-    expect(jest.spyOn(userService, 'update')).toHaveBeenCalledWith(
-      mockUser.id,
-      updateUserDto,
-    );
-  });
-
-  it('should thow NotFound if user doesnt exist', async () => {
-    jest
-      .spyOn(userService, 'update')
-      .mockRejectedValue(new NotFoundException());
-
-    const result = usersController.update(
-      mockAdminRequest,
-      mockUser.id,
-      updateUserDto,
-    );
-    await expect(result).rejects.toThrow(NotFoundException);
-    expect(jest.spyOn(userService, 'update')).toHaveBeenCalledWith(
-      mockUser.id,
-      updateUserDto,
-    );
-  });
-
-  it('should thow Unauthorized if not admin neither own user', async () => {
+  it('should thow Unauthorized if not own user', async () => {
     const result = usersController.update(
       mockUserRequest,
       'dummy-id',
