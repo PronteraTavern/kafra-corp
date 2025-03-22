@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Trip } from './entities/trip.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TripMember } from './entities/trip-members.entity';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class TripsService {
@@ -13,32 +14,16 @@ export class TripsService {
     @InjectRepository(TripMember)
     private tripMemberRepository: Repository<TripMember>,
   ) {}
-  // create(createTripDto: CreateTripDto) {
-  //   return 'This action adds a new trip';
-  // }
 
   async findAll(userId: string) {
-    const tripMembers = await this.tripsRepository
-      .createQueryBuilder('trips')
-      .innerJoin('trip_members', 'tm', `tm.user_id = '${userId}'`)
-      .getMany();
+    const trips = await this.tripsRepository.find({
+      relations: ['tripMembers', 'tripMembers.user'],
 
-    console.log('Deu bom');
-    console.log(tripMembers);
-    return tripMembers;
+      where: {
+        tripMembers: { user: { id: userId } },
+      },
+    });
 
-    // return tripMembers.map((tripMember) => tripMember.trip);
+    return trips;
   }
-
-  // findOne(id: number) {
-  //   return `This action returns a #${id} trip`;
-  // }
-
-  // update(id: number, updateTripDto: UpdateTripDto) {
-  //   return `This action updates a #${id} trip`;
-  // }
-
-  // remove(id: number) {
-  //   return `This action removes a #${id} trip`;
-  // }
 }

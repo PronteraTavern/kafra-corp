@@ -16,24 +16,18 @@ export enum TripRole {
 }
 
 @Entity('trip_members')
-@Unique(['trip_id', 'user_id']) // Ensures unique (trip_id, user_id) combination
+@Unique(['trip', 'user']) // Ensures unique (trip_id, user_id) combination
 export class TripMember {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // @ManyToOne((_type) => Trip)
-  // @JoinColumn()
-  // trip: Trip;
+  @ManyToOne(() => Trip, (trip) => trip.id, { nullable: false })
+  @JoinColumn({ name: 'trip_id' })
+  trip: Trip;
 
-  @Column()
-  trip_id: string;
-
-  // @ManyToOne((_type) => User)
-  // @JoinColumn()
-  // user: User;
-
-  @Column()
-  user_id: string;
+  @ManyToOne(() => User, (user) => user.id, { nullable: false })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @Column()
   role: TripRole;
