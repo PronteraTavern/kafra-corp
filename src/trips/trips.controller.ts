@@ -1,17 +1,22 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request } from '@nestjs/common';
 import { TripsService } from './trips.service';
 
 import { Public } from '../public.decorator';
+import { CreateTripDto } from './dto/create-trip.dto';
+import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 
 // @UseGuards(JwtAuthGuard)
 @Controller('trips')
 export class TripsController {
   constructor(private tripsService: TripsService) {}
 
-  // @Post()
-  // create(@Body() createTripDto: CreateTripDto) {
-  //   return this.tripsService.create(createTripDto);
-  // }
+  @Post()
+  create(
+    @Request() req: AuthenticatedRequest,
+    @Body() createTripDto: CreateTripDto,
+  ) {
+    return this.tripsService.create(req.user.id, createTripDto);
+  }
 
   @Public()
   @Get()

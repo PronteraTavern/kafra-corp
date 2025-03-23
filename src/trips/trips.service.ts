@@ -3,17 +3,21 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Trip } from './entities/trip.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TripMember } from './entities/trip-members.entity';
-import { User } from '../users/user.entity';
+import { CreateTripDto } from './dto/create-trip.dto';
 
 @Injectable()
 export class TripsService {
   constructor(
     @InjectRepository(Trip)
     private tripsRepository: Repository<Trip>,
-    @InjectRepository(TripMember)
-    private tripMemberRepository: Repository<TripMember>,
   ) {}
+
+  async create(userId: string, createTripDto: CreateTripDto): Promise<void> {
+    // const new_trip = await this.tripsRepository.create({
+    //   ...createTripDto,
+    //   trip_owner: userId,
+    // });
+  }
 
   async findAll(userId: string) {
     const trips = await this.tripsRepository.find({

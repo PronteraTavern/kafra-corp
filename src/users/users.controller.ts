@@ -11,11 +11,11 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { SafeUserDto } from './dtos/safe-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { User } from './user.entity';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -32,7 +32,7 @@ export class UsersController {
     status: 404,
     description: 'User not found',
   })
-  async profile(@Param('id') id: string): Promise<SafeUserDto> {
+  async profile(@Param('id') id: string): Promise<User> {
     return await this.userService.profile(id);
   }
 
@@ -60,7 +60,7 @@ export class UsersController {
     throw new UnauthorizedException();
   }
 
-  @Put()
+  @Put(':id')
   @ApiResponse({
     status: 200,
     description: 'Use profile has been sucessfully updated',
@@ -77,7 +77,7 @@ export class UsersController {
     @Request() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ): Promise<SafeUserDto> {
+  ): Promise<User> {
     if (req.user.id === id) {
       return await this.userService.update(id, updateUserDto);
     }

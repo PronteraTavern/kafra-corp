@@ -3,15 +3,15 @@ import { Test } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { SafeUserDto } from './dtos/safe-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
+import { User } from './user.entity';
 
 describe('UserController', () => {
   let usersController: UsersController;
   let userService: UsersService;
 
-  const mockUser: SafeUserDto = {
+  const mockUser: User = {
     id: '123e4567-e89b-12d3-a456-426614174000',
     avatar: 'https://randomavatar.com',
     first_name: 'John',
@@ -19,6 +19,7 @@ describe('UserController', () => {
     email: 'john@example.com',
     created_at: new Date(),
     updated_at: new Date(),
+    password: 'abcdef',
   };
 
   const updateUserDto: UpdateUserDto = {
@@ -28,7 +29,7 @@ describe('UserController', () => {
     last_name: 'newLastName',
     password: 'newPassword',
   };
-  const updatedMockUser: SafeUserDto = {
+  const updatedMockUser: User = {
     ...mockUser,
     ...updateUserDto,
     updated_at: new Date(),

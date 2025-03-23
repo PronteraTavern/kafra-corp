@@ -1,5 +1,5 @@
 import { IsString, IsNotEmpty } from 'class-validator';
-import { SafeUserDto } from 'src/users/dtos/safe-user.dto';
+import { User } from '../../users/user.entity';
 
 export class SignUpResponseDto {
   @IsString()
@@ -11,5 +11,5 @@ export class SignUpResponseDto {
   refresh_token: string;
 
   @IsNotEmpty()
-  user_info: SafeUserDto;
+  user_info: User;
 }

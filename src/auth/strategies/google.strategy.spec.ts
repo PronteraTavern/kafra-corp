@@ -2,15 +2,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { GoogleStrategy } from './google.strategy';
 import { AuthService } from '../auth.service';
 import { googleOAuthConfig } from '../../config/google-oauth.config';
-import { SafeUserDto } from '../../users/dtos/safe-user.dto';
 import { GooglePayload } from '../interfaces/google-payload.interface';
 import { ConfigType } from '@nestjs/config';
+import { User } from '../../users/user.entity';
 
 describe('GoogleStrategy', () => {
   let googleStrategy: GoogleStrategy;
   let authService: AuthService;
 
-  const mockUser: SafeUserDto = {
+  const mockUser: User = {
     id: '123e4567-e89b-12d3-a456-426614174000',
     avatar: 'https://randomavatar.com',
     first_name: 'John',
@@ -18,6 +18,7 @@ describe('GoogleStrategy', () => {
     email: 'john@example.com',
     created_at: new Date(),
     updated_at: new Date(),
+    password: '123456',
   };
 
   const mockGoogleConfig: ConfigType<typeof googleOAuthConfig> = {

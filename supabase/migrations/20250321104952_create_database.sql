@@ -24,7 +24,7 @@ $$ LANGUAGE plpgsql;
 create trigger set_updated_at before
 update
     on
-    users for each row execute function update_updated_at();
+    public.users for each row execute function update_updated_at();
 
 CREATE TYPE trip_status AS ENUM ('Planning', 'Booked', 'Cancelled', 'Concluded');
 
@@ -80,7 +80,7 @@ CREATE TABLE accommodation_suggestion_rating (
 
 
 -- Buying List Table (Items Needed for a Trip)
-CREATE TABLE shopping_list (
+CREATE TABLE shopping_items (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     trip_id UUID REFERENCES trips(id) ON DELETE CASCADE,
     suggested_by UUID REFERENCES users(id) ON DELETE SET NULL, -- Person who added it
