@@ -1,11 +1,21 @@
-import { Body, Controller, Get, Post, Request } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { TripsService } from './trips.service';
 
 import { Public } from '../public.decorator';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @Controller('trips')
 export class TripsController {
   constructor(private tripsService: TripsService) {}
@@ -15,7 +25,7 @@ export class TripsController {
     @Request() req: AuthenticatedRequest,
     @Body() createTripDto: CreateTripDto,
   ) {
-    return this.tripsService.create(req.user.id, createTripDto);
+    return this.tripsService.create(req.user, createTripDto);
   }
 
   @Public()

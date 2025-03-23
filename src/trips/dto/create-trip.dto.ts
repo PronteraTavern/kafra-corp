@@ -4,8 +4,8 @@ export class CreateTripDto {
   @IsNotEmpty()
   @IsString()
   title: string;
-  @IsDate()
+  // @IsDate()
   start_date: Date;
-  @IsDate()
+  // @IsDate()
   end_date: Date;
 }
