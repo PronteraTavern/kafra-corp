@@ -1,22 +1,22 @@
 import { Test } from '@nestjs/testing';
 import { LocalStrategy } from './local.strategy';
 import { AuthService } from '../auth.service';
-import { SafeUserDto } from '../../users/dtos/safe-user.dto';
 import { UnauthorizedException } from '@nestjs/common';
+import { User } from '../../users/user.entity';
 
 describe('LocalStrategy', () => {
   let localStrategy: LocalStrategy;
   let authService: AuthService;
 
-  const mockUser: SafeUserDto = {
+  const mockUser: User = {
     id: '123',
     avatar: 'https://randomavatar.com',
     first_name: 'John',
     last_name: 'Doe',
     email: 'john@example.com',
-    role: 'user',
     created_at: new Date(),
     updated_at: new Date(),
+    password: '123456',
   };
 
   beforeEach(async () => {

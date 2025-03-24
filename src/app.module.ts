@@ -9,8 +9,8 @@ import { DatabaseModule } from './database/database.module';
 import { appConfig } from './config/app.config';
 import { jwtConfig } from './config/jwt.config';
 import { googleOAuthConfig } from './config/google-oauth.config';
-import { AdminModule } from './admin/admin.module';
 import { refreshJwtConfig } from './config/refresh-jwt.config';
+import { TripsModule } from './trips/trips.module';
 
 @Module({
   imports: [
@@ -28,7 +28,7 @@ import { refreshJwtConfig } from './config/refresh-jwt.config';
     AuthModule,
     UsersModule,
     DatabaseModule,
-    AdminModule,
+    TripsModule,
   ],
 })
 export class AppModule {

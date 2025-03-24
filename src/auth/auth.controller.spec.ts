@@ -2,33 +2,32 @@ import { Test } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { SignInResponseDto } from './dtos/signin-response.dto';
-import { SafeUserDto } from 'src/users/dtos/safe-user.dto';
 import { AuthenticatedRequest } from './interfaces/authenticated-request.interface';
 import { SignInRequestDto } from './dtos/signin-request.dto';
 import { SignUpResponseDto } from './dtos/signup-response.dto';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
 import { BadRequestException } from '@nestjs/common';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
+import { User } from '../users/user.entity';
 
 describe('AuthController', () => {
   let authController: AuthController;
   let authService: AuthService;
 
-  const mockUser: SafeUserDto = {
+  const mockUser: User = {
     id: '123e4567-e89b-12d3-a456-426614174000',
     avatar: 'https://randomavatar.com',
     first_name: 'John',
     last_name: 'Doe',
     email: 'john@example.com',
-    role: 'user',
     created_at: new Date(),
     updated_at: new Date(),
+    password: 'abcdef',
   };
 
   const mockUserRequest: AuthenticatedRequest = {
     user: {
       id: '123e4567-e89b-12d3-a456-426614174000',
-      role: 'user',
     },
   } as AuthenticatedRequest;
 

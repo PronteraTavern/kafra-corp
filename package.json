@@ -33,7 +33,6 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "joi": "^17.13.3",
-    "nestjs-typeorm-paginate": "^4.1.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-jwt": "^4.0.1",
@@ -97,6 +96,7 @@
       "src/.*\\.dto\\.ts$",
       "src/.*\\.interface\\.ts$",
       "src/.*\\.constants\\.ts$",
+      "src/.*\\.entity\\.ts$",
       "src/config/"
     ],
     "coverageDirectory": "../coverage",

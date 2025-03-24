@@ -6,16 +6,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { SafeUserDto } from './dtos/safe-user.dto';
 import { CreateUserDto } from './dtos/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dtos/update-user.dto';
-
-import {
-  IPaginationOptions,
-  paginate,
-  Pagination,
-} from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class UsersService {
@@ -42,16 +35,23 @@ export class UsersService {
     return this.userRepository.findOneBy({ id });
   }
 
-  async profile(id: string): Promise<SafeUserDto> {
+  async findByEmailWithPassword(email: string): Promise<User | null> {
+    return await this.userRepository
+      .createQueryBuilder('user')
+      .addSelect('user.password') // Explicitly include the password_hash field
+      .where('user.email = :email', { email })
+      .getOne();
+  }
+
+  async profile(id: string): Promise<User> {
     const user = await this.findById(id);
     if (user) {
-      const { password_hash, ...result } = user;
-      return result;
+      return user;
     }
     throw new NotFoundException();
   }
 
-  async create(createUserDto: CreateUserDto): Promise<SafeUserDto> {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     const user = await this.findByEmail(createUserDto.email);
     if (user) {
       throw new BadRequestException();
@@ -60,13 +60,11 @@ export class UsersService {
 
     const newUser = this.userRepository.create({
       ...createUserDto,
-      password_hash: hashedPassword,
+      password: hashedPassword,
     });
 
     const createdUser: User = await this.userRepository.save(newUser);
-    const { password_hash, ...result } = createdUser;
-
-    return result;
+    return createdUser;
   }
 
   async remove(id: string): Promise<void> {
@@ -79,10 +77,7 @@ export class UsersService {
     return;
   }
 
-  async update(
-    id: string,
-    updatedUserDto: UpdateUserDto,
-  ): Promise<SafeUserDto> {
+  async update(id: string, updatedUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findById(id);
     if (!user) {
       throw new NotFoundException();
@@ -91,44 +86,13 @@ export class UsersService {
     // Only update the password if it's provided
     if (updatedUserDto.password) {
       updatedUserDto.password = bcrypt.hashSync(updatedUserDto.password, 10);
-      delete updatedUserDto.password; // Remove the password field before saving
     }
 
     // Merge the fields from updatedUserDto into the user object
     Object.assign(user, updatedUserDto);
-
+    console.log(user);
     const updatedUser: User = await this.userRepository.save(user);
-    const { password_hash, ...result } = updatedUser;
-
-    return result;
-  }
-
-  async find(options: IPaginationOptions): Promise<Pagination<SafeUserDto>> {
-    const queryBuilder = this.userRepository
-      .createQueryBuilder('users')
-      .select([
-        'users.id',
-        'users.email',
-        'users.created_at',
-        'users.avatar',
-        'users.first_name',
-        'users.last_name',
-        'users.role',
-        'users.updated_at',
-      ])
-      .orderBy('users.created_at', 'DESC');
-    return paginate<SafeUserDto>(queryBuilder, options);
-  }
-
-  async updateRole(id: string, newRole: string): Promise<SafeUserDto> {
-    const user = await this.findById(id);
-    if (!user) {
-      throw new NotFoundException();
-    }
-    user.role = newRole;
-    const updatedUser: User = await this.userRepository.save(user);
-    const { password_hash, ...result } = updatedUser;
-
-    return result;
+    console.log(updatedUser);
+    return updatedUser;
   }
 }

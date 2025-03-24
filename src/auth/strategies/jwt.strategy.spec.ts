@@ -21,7 +21,7 @@ describe('JwtStrategy', () => {
   });
 
   it('should validate payload correctly', () => {
-    const payload: JwtPayload = { id: '123', role: 'admin ' };
+    const payload: JwtPayload = { id: '123' };
     expect(jwtStrategy.validate(payload)).toEqual(payload);
   });
 

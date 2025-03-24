@@ -94,6 +94,6 @@ export class AuthController {
   async refreshToken(
     @Request() req: AuthenticatedRequest,
   ): Promise<RefreshTokenDto> {
-    return await this.authService.refreshToken(req.user.id, req.user.role);
+    return await this.authService.refreshToken(req.user.id);
   }
 }

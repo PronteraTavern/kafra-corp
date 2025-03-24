@@ -11,12 +11,12 @@ import { JwtPayload } from './interfaces/jwt-payload.interface';
 import * as bcrypt from 'bcrypt';
 import { SignUpResponseDto } from './dtos/signup-response.dto';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
-import { SafeUserDto } from '../users/dtos/safe-user.dto';
 import { UsersService } from '../users/users.service';
 import { GoogleUserDto } from './dtos/create-google-user.dto';
 import { refreshJwtConfig } from '../config/refresh-jwt.config';
 import { ConfigType } from '@nestjs/config';
 import { RefreshTokenDto } from './dtos/refresh-token.dto';
+import { User } from '../users/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -27,11 +27,10 @@ export class AuthService {
     private refreshTokenConfig: ConfigType<typeof refreshJwtConfig>,
   ) {}
 
-  async validateUser(email: string, password: string): Promise<SafeUserDto> {
-    const user = await this.usersService.findByEmail(email);
-    if (user && (await bcrypt.compare(password, user.password_hash))) {
-      const { password_hash, ...result } = user;
-      return result;
+  async validateUser(email: string, password: string): Promise<User> {
+    const user = await this.usersService.findByEmailWithPassword(email);
+    if (user && (await bcrypt.compare(password, user.password))) {
+      return user;
     }
 
     throw new UnauthorizedException();
@@ -42,22 +41,21 @@ export class AuthService {
     if (!user) {
       throw new BadRequestException();
     }
-    const payload: JwtPayload = { id: user.id, role: user.role };
-    const { password_hash, ...userResult } = user;
+    const payload: JwtPayload = { id: user.id };
     return {
       access_token: await this.jwtService.signAsync(payload),
       refresh_token: await this.jwtService.signAsync(
         payload,
         this.refreshTokenConfig,
       ),
-      user_info: userResult,
+      user_info: user,
     };
   }
 
   async signUp(createUserDto: CreateUserDto): Promise<SignUpResponseDto> {
     const user = await this.usersService.create(createUserDto);
 
-    const payload: JwtPayload = { id: user.id, role: user.role };
+    const payload: JwtPayload = { id: user.id };
     const access_token = await this.jwtService.signAsync(payload);
     const refreshToken = await this.jwtService.signAsync(
       payload,
@@ -67,13 +65,12 @@ export class AuthService {
     return { access_token, refresh_token: refreshToken, user_info: user };
   }
 
-  async validateGoogleUser(googleUser: GoogleUserDto): Promise<SafeUserDto> {
+  async validateGoogleUser(googleUser: GoogleUserDto): Promise<User> {
     const user = await this.usersService.findByEmail(googleUser.email);
 
     // Returns user if it's already registered in the database
     if (user) {
-      const { password_hash, ...userResult } = user;
-      return userResult;
+      return user;
     }
 
     // Creates a new use if it's not on the database yet
@@ -88,8 +85,8 @@ export class AuthService {
     return newUser;
   }
 
-  async refreshToken(id: string, role: string): Promise<RefreshTokenDto> {
-    const payload: JwtPayload = { id, role };
+  async refreshToken(id: string): Promise<RefreshTokenDto> {
+    const payload: JwtPayload = { id };
     const token = await this.jwtService.signAsync(payload);
     return {
       id,
