@@ -14,7 +14,7 @@ export enum TripStatus {
   PLANNING = 'Planning',
   ONGOING = 'Ongoing',
   COMPLETED = 'Completed',
-  CANCELED = 'Canceled',
+  CANCELLED = 'Cancelled',
 }
 
 @Entity('trips')

@@ -19,6 +19,8 @@ import { Trip } from './entities/trip.entity';
 import { TripsService } from './trips.service';
 import { TripAdminGuard } from '../guards/trip-admin.guard';
 import { UpdateTripDto } from './dto/update-trip.dto';
+import { TripGuard } from '../guards/trip-guard';
+import { AuthenticatedTripRequest } from '../interfaces/authenticated-trip-request.interface';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -47,7 +49,7 @@ export class TripsController {
     return this.tripsService.findAll(req.user.id);
   }
 
-  @UseGuards(TripAdminGuard)
+  @UseGuards(TripGuard, TripAdminGuard)
   @Patch(':tripId')
   @ApiResponse({
     status: 200,
@@ -58,19 +60,20 @@ export class TripsController {
     description: 'User has no privilege to update this trip',
   })
   @ApiResponse({
-    status: 400,
+    status: 404,
     description:
       'For some reason this trip was deleted right after the request',
   })
   update(
-    @Param('tripId') tripId: string,
+    @Param('tripId') _tripId: string,
+    @Request() req: AuthenticatedTripRequest,
     @Body() updateTripDto: UpdateTripDto,
   ): Promise<Trip> {
-    return this.tripsService.update(tripId, updateTripDto);
+    return this.tripsService.update(req.trip, updateTripDto);
   }
 
   @HttpCode(204)
-  @UseGuards(TripAdminGuard)
+  @UseGuards(TripGuard, TripAdminGuard)
   @Delete(':tripId')
   @ApiResponse({
     status: 204,
@@ -81,11 +84,13 @@ export class TripsController {
     description: 'User has no privilege to delete this trip',
   })
   @ApiResponse({
-    status: 400,
-    description:
-      'For some reason this trip was deleted right after the request',
+    status: 404,
+    description: 'Trips doesnt exist',
   })
-  remove(@Param('tripId') tripId: string): Promise<void> {
-    return this.tripsService.remove(tripId);
+  remove(
+    @Param('tripId') _tripId: string,
+    @Request() req: AuthenticatedTripRequest,
+  ): Promise<void> {
+    return this.tripsService.remove(req.trip);
   }
 }

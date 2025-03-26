@@ -4,17 +4,19 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { TripMemberService } from '../trip-member/trip-members.service';
 import { Reflector } from '@nestjs/core';
-import { TripRole } from '../trip-member/entities/trip-members.entity';
 import { TripsService } from '../trip/trips.service';
+import { TripStatus } from '../trip/entities/trip.entity';
 import { AuthenticatedTripRequest } from '../interfaces/authenticated-trip-request.interface';
 
+/**
+ * To use this Guard, you need to ensure that you have a `:tripId` as param
+ * This Guards validates the existence of the trip and its status, then injects the trip object into the request
+ */
 @Injectable()
-export class TripAdminGuard implements CanActivate {
+export class TripGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private tripMemberService: TripMemberService,
     private tripService: TripsService,
   ) {}
 
@@ -22,18 +24,16 @@ export class TripAdminGuard implements CanActivate {
     const request = context
       .switchToHttp()
       .getRequest<AuthenticatedTripRequest>();
-    const userId = request.user.id; // Extract user from JWT
-    const tripId = request.trip.id; // Extract trip ID from the request params
+    const tripId = request.params.tripId; // Extract trip ID from the request params
 
-    // Verifies necessary privileges
-    const tripMember = await this.tripMemberService.findBy(tripId, userId);
-
-    if (!tripMember || tripMember.role !== TripRole.ADMIN) {
+    // Verifies if the trip is cancelled.
+    const trip = await this.tripService.findById(tripId);
+    if (trip.status === TripStatus.CANCELLED) {
       throw new ForbiddenException(
-        'You are not authorized to modify this trip',
+        "The trip is cancelled, you can't modify it",
       );
     }
-
+    request.trip = trip;
     return true;
   }
 }

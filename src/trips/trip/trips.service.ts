@@ -1,11 +1,11 @@
 import {
-  BadRequestException,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 
 import { DataSource } from 'typeorm';
-import { Trip } from './entities/trip.entity';
+import { Trip, TripStatus } from './entities/trip.entity';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { User } from '../../users/user.entity';
 import {
@@ -66,25 +66,17 @@ export class TripsService {
   async findAll(userId: string) {
     const tripsRepository = this.dataSource.manager.getRepository(Trip);
 
-    const trips = await tripsRepository.find({
-      relations: ['tripMembers', 'tripMembers.user'],
-
-      where: {
-        tripMembers: { user: { id: userId } },
-      },
-    });
+    // TODO NEED TO BRING ALL INFO FROM TRIP
+    const trips = await tripsRepository.find({});
 
     return trips;
   }
 
-  async update(tripId: string, updateTripDto: UpdateTripDto): Promise<Trip> {
+  async update(
+    tripToUpdate: Trip,
+    updateTripDto: UpdateTripDto,
+  ): Promise<Trip> {
     const tripsRepository = this.dataSource.manager.getRepository(Trip);
-    // Fetch trip by Id
-    const tripToUpdate = await tripsRepository.findOneBy({ id: tripId });
-
-    if (!tripToUpdate) {
-      throw new BadRequestException();
-    }
 
     // Modify fields
     Object.assign(tripToUpdate, updateTripDto);
@@ -97,7 +89,7 @@ export class TripsService {
       relations: ['tripMembers', 'tripMembers.user'],
 
       where: {
-        tripMembers: { trip: { id: tripId } },
+        tripMembers: { trip: { id: tripToUpdate.id } },
       },
     });
 
@@ -105,17 +97,26 @@ export class TripsService {
     return updatedTrip[0];
   }
 
-  async remove(tripId: string): Promise<void> {
+  async remove(tripToDelete: Trip): Promise<void> {
     const tripsRepository = this.dataSource.manager.getRepository(Trip);
-    // Fetch trip by Id
-    const tripToDelete = await tripsRepository.findOneBy({ id: tripId });
 
-    if (!tripToDelete) {
-      throw new BadRequestException();
-    }
-
-    await tripsRepository.remove(tripToDelete);
+    await tripsRepository.save({
+      ...tripToDelete,
+      status: TripStatus.CANCELLED,
+    });
 
     return;
+  }
+
+  async findById(tripId: string): Promise<Trip> {
+    const tripsRepository = this.dataSource.manager.getRepository(Trip);
+    // Fetch trip by Id
+    const trip = await tripsRepository.findOneBy({ id: tripId });
+
+    if (!trip) {
+      throw new NotFoundException();
+    }
+
+    return trip;
   }
 }
