@@ -90,10 +90,19 @@ export class TripsService {
     Object.assign(tripToUpdate, updateTripDto);
 
     // Persist
-    const updatedTrip = await tripsRepository.save(tripToUpdate);
+    await tripsRepository.save(tripToUpdate);
+
+    //Fetch full trip object
+    const updatedTrip = await tripsRepository.find({
+      relations: ['tripMembers', 'tripMembers.user'],
+
+      where: {
+        tripMembers: { trip: { id: tripId } },
+      },
+    });
 
     // Return
-    return updatedTrip;
+    return updatedTrip[0];
   }
 
   async remove(tripId: string): Promise<void> {
