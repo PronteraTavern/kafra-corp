@@ -1,7 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  Param,
+  Patch,
   Post,
   Request,
   UseGuards,
@@ -9,10 +13,12 @@ import {
 
 import { CreateTripDto } from './dto/create-trip.dto';
 import { AuthenticatedRequest } from '../../auth/interfaces/authenticated-request.interface';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Trip } from './entities/trip.entity';
 import { TripsService } from './trips.service';
+import { TripAdminGuard } from '../guards/trip-admin.guard';
+import { UpdateTripDto } from './dto/update-trip.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -21,6 +27,10 @@ export class TripsController {
   constructor(private tripsService: TripsService) {}
 
   @Post()
+  @ApiResponse({
+    status: 200,
+    description: 'Trip was created',
+  })
   create(
     @Request() req: AuthenticatedRequest,
     @Body() createTripDto: CreateTripDto,
@@ -29,20 +39,53 @@ export class TripsController {
   }
 
   @Get()
+  @ApiResponse({
+    status: 200,
+    description: 'Trips were found',
+  })
   async findAll(@Request() req: AuthenticatedRequest): Promise<Trip[]> {
     return this.tripsService.findAll(req.user.id);
   }
 
-  // @Patch(':tripId')
-  // update(
-  //   @Param('tripId') tripId: string,
-  //   @Body() updateTripDto: UpdateTripDto,
-  // ): Promise<Trip> {
-  //   return this.tripsService.update(tripId, updateTripDto);
-  // }
+  @UseGuards(TripAdminGuard)
+  @Patch(':tripId')
+  @ApiResponse({
+    status: 200,
+    description: 'Trip was updated',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'User has no privilege to update this trip',
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'For some reason this trip was deleted right after the request',
+  })
+  update(
+    @Param('tripId') tripId: string,
+    @Body() updateTripDto: UpdateTripDto,
+  ): Promise<Trip> {
+    return this.tripsService.update(tripId, updateTripDto);
+  }
 
-  // @Delete(':id')
-  // remove(@Param('id', @Request() req: AuthenticatedRequest) id: string) {
-  //   return this.tripsService.remove(+id);
-  // }
+  @HttpCode(204)
+  @UseGuards(TripAdminGuard)
+  @Delete(':tripId')
+  @ApiResponse({
+    status: 204,
+    description: 'Trip was deleted',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'User has no privilege to delete this trip',
+  })
+  @ApiResponse({
+    status: 400,
+    description:
+      'For some reason this trip was deleted right after the request',
+  })
+  remove(@Param('tripId') tripId: string): Promise<void> {
+    return this.tripsService.remove(tripId);
+  }
 }

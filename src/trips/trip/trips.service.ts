@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 
 import { DataSource } from 'typeorm';
 import { Trip } from './entities/trip.entity';
@@ -8,6 +12,7 @@ import {
   TripMember,
   TripRole,
 } from '../trip-member/entities/trip-members.entity';
+import { UpdateTripDto } from './dto/update-trip.dto';
 
 @Injectable()
 export class TripsService {
@@ -70,5 +75,38 @@ export class TripsService {
     });
 
     return trips;
+  }
+
+  async update(tripId: string, updateTripDto: UpdateTripDto): Promise<Trip> {
+    const tripsRepository = this.dataSource.manager.getRepository(Trip);
+    // Fetch trip by Id
+    const tripToUpdate = await tripsRepository.findOneBy({ id: tripId });
+
+    if (!tripToUpdate) {
+      throw new BadRequestException();
+    }
+
+    // Modify fields
+    Object.assign(tripToUpdate, updateTripDto);
+
+    // Persist
+    const updatedTrip = await tripsRepository.save(tripToUpdate);
+
+    // Return
+    return updatedTrip;
+  }
+
+  async remove(tripId: string): Promise<void> {
+    const tripsRepository = this.dataSource.manager.getRepository(Trip);
+    // Fetch trip by Id
+    const tripToDelete = await tripsRepository.findOneBy({ id: tripId });
+
+    if (!tripToDelete) {
+      throw new BadRequestException();
+    }
+
+    await tripsRepository.remove(tripToDelete);
+
+    return;
   }
 }

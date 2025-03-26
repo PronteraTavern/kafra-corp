@@ -6,6 +6,7 @@ import { Trip } from './trip/entities/trip.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TripsController } from './trip/trips.controller';
 import { TripsService } from './trip/trips.service';
+import { TripMemberService } from './trip-member/trip-members.service';
 
 @Module({
   imports: [
@@ -14,6 +15,6 @@ import { TripsService } from './trip/trips.service';
     TypeOrmModule.forFeature([Trip, TripMember]),
   ],
   controllers: [TripsController],
-  providers: [TripsService],
+  providers: [TripsService, TripMemberService],
 })
 export class TripsModule {}
