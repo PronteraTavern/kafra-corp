@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { TripsService } from './trips.service';
-import { TripsController } from './trips.controller';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from '../users/users.module';
+import { TripMember } from './trip-member/entities/trip-members.entity';
+import { Trip } from './trip/entities/trip.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Trip } from './entities/trip.entity';
-import { TripMember } from './entities/trip-members.entity';
+import { TripsController } from './trip/trips.controller';
+import { TripsService } from './trip/trips.service';
 
 @Module({
   imports: [

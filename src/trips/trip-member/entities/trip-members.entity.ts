@@ -7,8 +7,9 @@ import {
   PrimaryGeneratedColumn,
   Unique,
 } from 'typeorm';
-import { Trip } from './trip.entity';
-import { User } from '../../users/user.entity';
+import { User } from '../../../users/user.entity';
+import { Exclude } from 'class-transformer';
+import { Trip } from '../../trip/entities/trip.entity';
 
 export enum TripRole {
   MEMBER = 'Member',
@@ -19,6 +20,7 @@ export enum TripRole {
 @Unique(['trip', 'user']) // Ensures unique (trip_id, user_id) combination
 export class TripMember {
   @PrimaryGeneratedColumn('uuid')
+  @Exclude()
   id: string;
 
   @ManyToOne(() => Trip, (trip) => trip.id, { nullable: false })

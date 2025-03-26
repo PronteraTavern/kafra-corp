@@ -7,8 +7,8 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../../users/user.entity';
-import { TripMember } from './trip-members.entity';
+import { User } from '../../../users/user.entity';
+import { TripMember } from '../../trip-member/entities/trip-members.entity';
 
 export enum TripStatus {
   PLANNING = 'Planning',
@@ -27,7 +27,7 @@ export class Trip {
 
   @ManyToOne(() => User, (user) => user.id, { nullable: false })
   @JoinColumn({ name: 'trip_owner' })
-  user: User;
+  trip_owner: User;
 
   @Column()
   title: string;
@@ -44,5 +44,5 @@ export class Trip {
   @OneToMany(() => TripMember, (tripMember) => tripMember.trip, {
     nullable: false,
   })
-  tripMembers: TripMember;
+  tripMembers: [TripMember];
 }
