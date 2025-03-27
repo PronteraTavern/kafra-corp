@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TripMember, TripRole } from './entities/trip-members.entity';
 import { Repository } from 'typeorm';
@@ -27,7 +31,10 @@ export class TripMemberService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    // TODO - NEED TO ADD A CHECK IN CASE USER IS ALREADY ADDED
+    const tripMember = await this.findBy(trip.id, user.id);
+    if (tripMember) {
+      throw new ConflictException('This user is already a member of the trip');
+    }
 
     const createdMember = this.tripMembersRepository.create({
       user,

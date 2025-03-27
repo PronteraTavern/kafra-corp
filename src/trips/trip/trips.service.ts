@@ -66,9 +66,18 @@ export class TripsService {
   async findAll(userId: string) {
     const tripsRepository = this.dataSource.manager.getRepository(Trip);
 
-    // TODO NEED TO BRING ALL INFO FROM TRIP
-    const trips = await tripsRepository.find({});
-
+    const trips = await tripsRepository
+      .createQueryBuilder('trip')
+      .innerJoin(
+        'trip.tripMembers',
+        'tripMember',
+        'tripMember.user_id = :userId',
+        { userId },
+      )
+      .leftJoinAndSelect('trip.trip_owner', 'trip_owner')
+      .leftJoinAndSelect('trip.tripMembers', 'tripMembers')
+      .leftJoinAndSelect('tripMembers.user', 'memberUser')
+      .getMany();
     return trips;
   }
 
