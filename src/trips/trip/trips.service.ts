@@ -108,7 +108,7 @@ export class TripsService {
 
     //Fetch full trip object
     const updatedTrip = await tripsRepository.find({
-      relations: ['tripMembers', 'tripMembers.user'],
+      relations: ['tripMembers', 'tripMembers.user', 'trip_owner'],
 
       where: {
         tripMembers: { trip: { id: tripToUpdate.id } },
@@ -128,17 +128,5 @@ export class TripsService {
     });
 
     return;
-  }
-
-  async findById(tripId: string): Promise<Trip> {
-    const tripsRepository = this.dataSource.manager.getRepository(Trip);
-    // Fetch trip by Id
-    const trip = await tripsRepository.findOneBy({ id: tripId });
-
-    if (!trip) {
-      throw new NotFoundException();
-    }
-
-    return trip;
   }
 }

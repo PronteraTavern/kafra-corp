@@ -20,7 +20,7 @@ export class TripGuard implements CanActivate {
       .getRequest<AuthenticatedTripRequest>();
     const tripId = request.params.tripId; // Extract trip ID from the request params
 
-    const trip = await this.tripService.findById(tripId);
+    const trip = await this.tripService.findOne(tripId);
     request.trip = trip;
     return true;
   }
