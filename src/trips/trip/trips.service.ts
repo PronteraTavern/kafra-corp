@@ -81,6 +81,19 @@ export class TripsService {
     return trips;
   }
 
+  async findOne(tripId: string): Promise<Trip> {
+    const tripsRepository = this.dataSource.manager.getRepository(Trip);
+    const trip = await tripsRepository.findOne({
+      where: { id: tripId },
+      relations: ['trip_owner', 'tripMembers', 'tripMembers.user'],
+    });
+
+    if (!trip) {
+      throw new NotFoundException();
+    }
+    return trip;
+  }
+
   async update(
     tripToUpdate: Trip,
     updateTripDto: UpdateTripDto,

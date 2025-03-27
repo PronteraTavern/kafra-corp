@@ -9,8 +9,9 @@ import { Reflector } from '@nestjs/core';
 import { TripsService } from '../trip/trips.service';
 import { AuthenticatedTripRequest } from '../interfaces/authenticated-trip-request.interface';
 
+/// Any call to this guard requires that TripGuard was called previously.
 @Injectable()
-export class TripMember implements CanActivate {
+export class TripMemberGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     private tripMemberService: TripMemberService,

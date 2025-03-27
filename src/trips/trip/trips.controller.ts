@@ -21,6 +21,7 @@ import { TripAdminGuard } from '../guards/trip-admin.guard';
 import { UpdateTripDto } from './dto/update-trip.dto';
 import { TripGuard } from '../guards/trip-guard';
 import { AuthenticatedTripRequest } from '../interfaces/authenticated-trip-request.interface';
+import { TripMemberGuard } from '../guards/trip-member.guard';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -47,6 +48,24 @@ export class TripsController {
   })
   async findAll(@Request() req: AuthenticatedRequest): Promise<Trip[]> {
     return this.tripsService.findAll(req.user.id);
+  }
+
+  @UseGuards(TripGuard, TripMemberGuard)
+  @Get(':tripId')
+  @ApiResponse({
+    status: 200,
+    description: 'Trip was found',
+  })
+  @ApiResponse({
+    status: 404,
+    description:
+      'For some reason this trip was deleted right after the request',
+  })
+  async find(
+    @Param('tripId') _tripId: string,
+    @Request() req: AuthenticatedTripRequest,
+  ): Promise<Trip> {
+    return this.tripsService.findOne(req.trip.id);
   }
 
   @UseGuards(TripGuard, TripAdminGuard)
