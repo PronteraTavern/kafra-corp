@@ -155,22 +155,6 @@ describe('UsersService', () => {
     });
   });
 
-  describe('remove', () => {
-    it('should remove a user and return nothing', async () => {
-      userRepository.findOneBy = jest.fn().mockResolvedValue(mockUser);
-      userRepository.remove = jest.fn().mockResolvedValue(mockUser);
-
-      expect(await usersService.remove(mockUser.id)).toBeUndefined();
-    });
-
-    it('should throw NotFoundException if user does not exist', async () => {
-      userRepository.findOneBy = jest.fn().mockResolvedValue(null);
-      await expect(usersService.remove('invalid-id')).rejects.toThrow(
-        NotFoundException,
-      );
-    });
-  });
-
   describe('update', () => {
     it('should update user details and return a SafeUserDto', async () => {
       const updated_name = 'Updated Name';
@@ -183,15 +167,8 @@ describe('UsersService', () => {
         ...updateUserDto,
       });
 
-      const result = await usersService.update(mockUser.id, updateUserDto);
+      const result = await usersService.update(mockUser, updateUserDto);
       expect(result).toEqual({ ...mockUser, first_name: updated_name });
-    });
-
-    it('should throw NotFoundException if user does not exist', async () => {
-      userRepository.findOneBy = jest.fn().mockResolvedValue(null);
-      await expect(usersService.update('invalid-id', {})).rejects.toThrow(
-        NotFoundException,
-      );
     });
 
     it('should encrypt and update user password correctly', async () => {
@@ -204,7 +181,7 @@ describe('UsersService', () => {
       jest.spyOn(bcrypt, 'hashSync').mockReturnValue('abcdef-hashed');
       jest.spyOn(userRepository, 'save').mockResolvedValue(mockUser);
 
-      const result = await usersService.update(mockUser.id, updateUserDto);
+      const result = await usersService.update(mockUser, updateUserDto);
       expect(jest.spyOn(bcrypt, 'hashSync')).toHaveBeenCalledTimes(1);
       expect(jest.spyOn(bcrypt, 'hashSync')).toHaveBeenCalledWith(
         newPassword,

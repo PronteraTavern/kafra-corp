@@ -68,21 +68,16 @@ export class UsersService {
   }
 
   async remove(id: string): Promise<void> {
-    const user = await this.findById(id);
-    if (!user) {
-      throw new NotFoundException();
-    }
-    await this.userRepository.remove(user);
+    await this.userRepository
+      .createQueryBuilder()
+      .softDelete()
+      .where('id = :id', { id })
+      .execute();
 
     return;
   }
 
-  async update(id: string, updatedUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findById(id);
-    if (!user) {
-      throw new NotFoundException();
-    }
-
+  async update(user: User, updatedUserDto: UpdateUserDto): Promise<User> {
     // Only update the password if it's provided
     if (updatedUserDto.password) {
       updatedUserDto.password = bcrypt.hashSync(updatedUserDto.password, 10);
@@ -90,9 +85,7 @@ export class UsersService {
 
     // Merge the fields from updatedUserDto into the user object
     Object.assign(user, updatedUserDto);
-    console.log(user);
     const updatedUser: User = await this.userRepository.save(user);
-    console.log(updatedUser);
     return updatedUser;
   }
 }

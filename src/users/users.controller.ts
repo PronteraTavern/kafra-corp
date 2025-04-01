@@ -4,10 +4,8 @@ import {
   Delete,
   Get,
   HttpCode,
-  Param,
   Put,
   Request,
-  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -23,7 +21,7 @@ import { User } from './user.entity';
 export class UsersController {
   constructor(private userService: UsersService) {}
 
-  @Get(':id')
+  @Get()
   @ApiResponse({
     status: 200,
     description: 'Use profile has been sucessfully found',
@@ -32,8 +30,8 @@ export class UsersController {
     status: 404,
     description: 'User not found',
   })
-  async profile(@Param('id') id: string): Promise<User> {
-    return await this.userService.profile(id);
+  profile(@Request() req: AuthenticatedRequest): User {
+    return req.user;
   }
 
   @Delete()
@@ -50,17 +48,11 @@ export class UsersController {
     status: 404,
     description: 'User not found',
   })
-  async delete(
-    @Request() req: AuthenticatedRequest,
-    @Param('id') id: string,
-  ): Promise<void> {
-    if (req.user.id === id) {
-      return await this.userService.remove(id);
-    }
-    throw new UnauthorizedException();
+  async delete(@Request() req: AuthenticatedRequest): Promise<void> {
+    return await this.userService.remove(req.user.id);
   }
 
-  @Put(':id')
+  @Put()
   @ApiResponse({
     status: 200,
     description: 'Use profile has been sucessfully updated',
@@ -75,12 +67,8 @@ export class UsersController {
   })
   async update(
     @Request() req: AuthenticatedRequest,
-    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    if (req.user.id === id) {
-      return await this.userService.update(id, updateUserDto);
-    }
-    throw new UnauthorizedException();
+    return await this.userService.update(req.user, updateUserDto);
   }
 }

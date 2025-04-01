@@ -53,6 +53,7 @@ export class AuthService {
   }
 
   async signUp(createUserDto: CreateUserDto): Promise<SignUpResponseDto> {
+    // TODO first, verify if email already exist
     const user = await this.usersService.create(createUserDto);
 
     const payload: JwtPayload = { id: user.id };

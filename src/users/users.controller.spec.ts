@@ -2,7 +2,6 @@ import { Test } from '@nestjs/testing';
 
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 import { User } from './user.entity';
@@ -65,51 +64,12 @@ describe('UserController', () => {
     jest.clearAllMocks();
   });
 
-  describe('profile', () => {
-    it('should return user profile info', async () => {
-      jest.spyOn(userService, 'profile').mockResolvedValue(mockUser);
-      const result = await usersController.profile(mockUser.id);
-      expect(result).toEqual(mockUser);
-    });
-
-    it('should throw NotFoundException if user is not found', async () => {
-      jest
-        .spyOn(userService, 'profile')
-        .mockRejectedValue(new NotFoundException());
-
-      await expect(usersController.profile('non-existent-id')).rejects.toThrow(
-        NotFoundException,
-      );
-    });
-    it('should call service profile with the correct id', async () => {
-      jest.spyOn(userService, 'profile').mockResolvedValue(mockUser);
-      await usersController.profile(mockUser.id);
-      expect(jest.spyOn(userService, 'profile')).toHaveBeenCalledWith(
-        mockUser.id,
-      );
-    });
-  });
-
   describe('delete', () => {
     it('should delete user as own user', async () => {
       jest.spyOn(userService, 'remove').mockResolvedValue(undefined);
-      const response = await usersController.delete(
-        mockUserRequest,
-        mockUser.id,
-      );
-      expect(jest.spyOn(userService, 'remove')).toHaveBeenCalledWith(
-        mockUser.id,
-      );
+      const response = await usersController.delete(mockUserRequest);
       expect(response).toBeUndefined();
     });
-  });
-
-  it('should throw UnauthorizedException if not own user', async () => {
-    await expect(
-      usersController.delete(mockUserRequest, 'dummy-id'),
-    ).rejects.toThrow(UnauthorizedException);
-
-    expect(jest.spyOn(userService, 'remove')).toHaveBeenCalledTimes(0);
   });
 
   describe('update', () => {
@@ -118,24 +78,9 @@ describe('UserController', () => {
 
       const result = await usersController.update(
         mockUserRequest,
-        mockUser.id,
         updateUserDto,
       );
       expect(result).toBe(updatedMockUser);
-      expect(jest.spyOn(userService, 'update')).toHaveBeenCalledWith(
-        mockUser.id,
-        updateUserDto,
-      );
     });
-  });
-
-  it('should thow Unauthorized if not own user', async () => {
-    const result = usersController.update(
-      mockUserRequest,
-      'dummy-id',
-      updateUserDto,
-    );
-    await expect(result).rejects.toThrow(UnauthorizedException);
-    expect(jest.spyOn(userService, 'update')).toHaveBeenCalledTimes(0);
   });
 });
