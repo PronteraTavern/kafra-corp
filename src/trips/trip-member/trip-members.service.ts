@@ -29,6 +29,20 @@ export class TripMemberService {
     });
   }
 
+  async findByWithSoftDeleted(
+    tripId: string,
+    userId: string,
+  ): Promise<TripMember | null> {
+    return this.tripMembersRepository.findOne({
+      where: {
+        trip: { id: tripId },
+        user: { id: userId },
+      },
+      relations: ['user'],
+      withDeleted: true,
+    });
+  }
+
   async fetchTripMemberForReturn(tripMemberId: string): Promise<TripMember> {
     const tripMember = await this.tripMembersRepository.findOne({
       where: { id: tripMemberId },
@@ -47,22 +61,34 @@ export class TripMemberService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const tripMember = await this.findBy(trip.id, user.id);
-    if (tripMember) {
+    const tripMember = await this.findByWithSoftDeleted(trip.id, user.id);
+    // If there's no record on the table, we just create and persist the trip member
+    if (!tripMember) {
+      const createdMember = this.tripMembersRepository.create({
+        user: { id: user.id },
+        role: TripRole.MEMBER,
+        trip: { id: trip.id },
+      });
+
+      const savedMember = await this.tripMembersRepository.save(createdMember);
+
+      return this.fetchTripMemberForReturn(savedMember.id);
+    } else {
+      // If there's a record on the table we need to check if it's a deleted member to restore it.
+      if (tripMember.deleted_at !== null) {
+        const restoreResult = await this.tripMembersRepository
+          .createQueryBuilder()
+          .restore()
+          .where('id = :id', { id: tripMember.id })
+          .execute();
+
+        if (restoreResult.affected !== 1) {
+          throw new ConflictException('Something went wrong');
+        }
+        return this.fetchTripMemberForReturn(tripMember.id);
+      }
       throw new ConflictException('This user is already a member of the trip');
     }
-
-    // Probably doing this poorly
-    const createdMember = this.tripMembersRepository.create({
-      user: { id: user.id },
-      role: TripRole.MEMBER,
-      trip: { id: trip.id },
-    });
-
-    const savedMember = await this.tripMembersRepository.save(createdMember);
-    // const result = await this.findBy(trip.id, user.id);
-
-    return this.fetchTripMemberForReturn(savedMember.id);
   }
 
   async updateMemberRole(
@@ -104,7 +130,11 @@ export class TripMemberService {
       throw new ConflictException('This user is not a member of the trip');
     }
     // Remove
-    await this.tripMembersRepository.remove(tripMember);
+    await this.tripMembersRepository
+      .createQueryBuilder()
+      .softDelete()
+      .where('id = :id', { id: tripMember.id })
+      .execute();
     //return
 
     return;

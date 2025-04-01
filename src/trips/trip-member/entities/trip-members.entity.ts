@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -36,4 +37,7 @@ export class TripMember {
 
   @CreateDateColumn()
   joined_at: Date;
+
+  @DeleteDateColumn()
+  deleted_at?: Date;
 }
