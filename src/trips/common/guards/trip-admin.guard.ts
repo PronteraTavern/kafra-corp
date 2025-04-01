@@ -4,17 +4,17 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { TripMemberService } from '../trip-member/trip-members.service';
+import { MembersService } from '../../members/members.service';
 import { Reflector } from '@nestjs/core';
-import { TripRole } from '../trip-member/entities/trip-members.entity';
-import { TripsService } from '../trip/trips.service';
+import { TripRole } from '../../members/entities/members.entity';
+import { TripsService } from '../../trips.service';
 import { AuthenticatedTripRequest } from '../interfaces/authenticated-trip-request.interface';
 
 @Injectable()
 export class TripAdminGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private tripMemberService: TripMemberService,
+    private tripMemberService: MembersService,
     private tripService: TripsService,
   ) {}
 

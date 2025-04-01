@@ -7,8 +7,8 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from '../../../users/user.entity';
-import { TripMember } from '../../trip-member/entities/trip-members.entity';
+import { User } from '../../users/user.entity';
+import { Member } from '../members/entities/members.entity';
 
 export enum TripStatus {
   PLANNING = 'Planning',
@@ -41,8 +41,8 @@ export class Trip {
   @CreateDateColumn()
   created_at: Date;
 
-  @OneToMany(() => TripMember, (tripMember) => tripMember.trip, {
+  @OneToMany(() => Member, (tripMember) => tripMember.trip, {
     nullable: false,
   })
-  tripMembers: [TripMember];
+  tripMembers: [Member];
 }

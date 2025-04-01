@@ -7,11 +7,8 @@ import {
 import { DataSource } from 'typeorm';
 import { Trip, TripStatus } from './entities/trip.entity';
 import { CreateTripDto } from './dto/create-trip.dto';
-import { User } from '../../users/user.entity';
-import {
-  TripMember,
-  TripRole,
-} from '../trip-member/entities/trip-members.entity';
+import { User } from '../users/user.entity';
+import { Member, TripRole } from './members/entities/members.entity';
 import { UpdateTripDto } from './dto/update-trip.dto';
 
 @Injectable()
@@ -25,8 +22,7 @@ export class TripsService {
 
     try {
       const tripsRepository = queryRunner.manager.getRepository(Trip);
-      const tripMembersRepository =
-        queryRunner.manager.getRepository(TripMember);
+      const tripMembersRepository = queryRunner.manager.getRepository(Member);
 
       const newTrip = tripsRepository.create({
         ...createTripDto,

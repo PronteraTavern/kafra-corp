@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { User } from '../../../users/user.entity';
 import { Exclude } from 'class-transformer';
-import { Trip } from '../../trip/entities/trip.entity';
+import { Trip } from '../../entities/trip.entity';
 
 export enum TripRole {
   MEMBER = 'Member',
@@ -19,7 +19,7 @@ export enum TripRole {
 
 @Entity('trip_members')
 @Unique(['trip', 'user']) // Ensures unique (trip_id, user_id) combination
-export class TripMember {
+export class Member {
   @PrimaryGeneratedColumn('uuid')
   @Exclude()
   id: string;

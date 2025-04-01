@@ -12,16 +12,16 @@ import {
 } from '@nestjs/common';
 
 import { CreateTripDto } from './dto/create-trip.dto';
-import { AuthenticatedRequest } from '../../auth/interfaces/authenticated-request.interface';
+import { AuthenticatedRequest } from '../auth/interfaces/authenticated-request.interface';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Trip } from './entities/trip.entity';
 import { TripsService } from './trips.service';
-import { TripAdminGuard } from '../guards/trip-admin.guard';
+import { TripAdminGuard } from './common/guards/trip-admin.guard';
 import { UpdateTripDto } from './dto/update-trip.dto';
-import { TripGuard } from '../guards/trip-guard';
-import { AuthenticatedTripRequest } from '../interfaces/authenticated-trip-request.interface';
-import { TripMemberGuard } from '../guards/trip-member.guard';
+import { TripGuard } from './common/guards/trip-guard';
+import { TripMemberGuard } from './common/guards/trip-member.guard';
+import { AuthenticatedTripRequest } from './common/interfaces/authenticated-trip-request.interface';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()

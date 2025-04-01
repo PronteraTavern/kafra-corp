@@ -11,18 +11,18 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { TripMemberService } from './trip-members.service';
-import { TripMember } from './entities/trip-members.entity';
-import { TripGuard } from '../guards/trip-guard';
-import { AuthenticatedTripRequest } from '../interfaces/authenticated-trip-request.interface';
+import { MembersService } from './members.service';
+import { Member } from './entities/members.entity';
+import { TripGuard } from '../common/guards/trip-guard';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
-import { TripAdminGuard } from '../guards/trip-admin.guard';
+import { TripAdminGuard } from '../common/guards/trip-admin.guard';
+import { AuthenticatedTripRequest } from '../common/interfaces/authenticated-trip-request.interface';
 
-@UseGuards(JwtAuthGuard, TripGuard, TripMember)
+@UseGuards(JwtAuthGuard, TripGuard, Member)
 @ApiBearerAuth()
 @Controller('trips/:tripId/members')
-export class TripMemberController {
-  constructor(private tripMembersService: TripMemberService) {}
+export class MembersController {
+  constructor(private tripMembersService: MembersService) {}
 
   @Patch(':email')
   @ApiResponse({
@@ -41,7 +41,7 @@ export class TripMemberController {
     @Param('tripId') _tripId: string,
     @Param('email') email: string,
     @Request() req: AuthenticatedTripRequest,
-  ): Promise<TripMember> {
+  ): Promise<Member> {
     return this.tripMembersService.addMember(req.trip, email);
   }
 
@@ -63,7 +63,7 @@ export class TripMemberController {
     @Param('tripId') _tripId: string,
     @Request() req: AuthenticatedTripRequest,
     @Body() updateMemberRoleDto: UpdateMemberRoleDto,
-  ): Promise<TripMember> {
+  ): Promise<Member> {
     return this.tripMembersService.updateMemberRole(
       req.trip,
       updateMemberRoleDto,

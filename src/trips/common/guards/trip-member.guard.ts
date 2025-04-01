@@ -4,9 +4,9 @@ import {
   ExecutionContext,
   ForbiddenException,
 } from '@nestjs/common';
-import { TripMemberService } from '../trip-member/trip-members.service';
+import { MembersService } from '../../members/members.service';
 import { Reflector } from '@nestjs/core';
-import { TripsService } from '../trip/trips.service';
+import { TripsService } from '../../trips.service';
 import { AuthenticatedTripRequest } from '../interfaces/authenticated-trip-request.interface';
 
 /// Any call to this guard requires that TripGuard was called previously.
@@ -14,7 +14,7 @@ import { AuthenticatedTripRequest } from '../interfaces/authenticated-trip-reque
 export class TripMemberGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private tripMemberService: TripMemberService,
+    private tripMemberService: MembersService,
     private tripService: TripsService,
   ) {}
 

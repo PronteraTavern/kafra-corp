@@ -5,21 +5,21 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { TripMember, TripRole } from './entities/trip-members.entity';
+import { Member, TripRole } from './entities/members.entity';
 import { Repository } from 'typeorm';
 import { UsersService } from '../../users/users.service';
-import { Trip } from '../trip/entities/trip.entity';
 import { UpdateMemberRoleDto } from './dto/update-member-role.dto';
+import { Trip } from '../entities/trip.entity';
 
 @Injectable()
-export class TripMemberService {
+export class MembersService {
   constructor(
-    @InjectRepository(TripMember)
-    private tripMembersRepository: Repository<TripMember>,
+    @InjectRepository(Member)
+    private tripMembersRepository: Repository<Member>,
     private userService: UsersService,
   ) {}
 
-  async findBy(tripId: string, userId: string): Promise<TripMember | null> {
+  async findBy(tripId: string, userId: string): Promise<Member | null> {
     return this.tripMembersRepository.findOne({
       where: {
         trip: { id: tripId },
@@ -32,7 +32,7 @@ export class TripMemberService {
   async findByWithSoftDeleted(
     tripId: string,
     userId: string,
-  ): Promise<TripMember | null> {
+  ): Promise<Member | null> {
     return this.tripMembersRepository.findOne({
       where: {
         trip: { id: tripId },
@@ -43,7 +43,7 @@ export class TripMemberService {
     });
   }
 
-  async fetchTripMemberForReturn(tripMemberId: string): Promise<TripMember> {
+  async fetchTripMemberForReturn(tripMemberId: string): Promise<Member> {
     const tripMember = await this.tripMembersRepository.findOne({
       where: { id: tripMemberId },
       relations: ['user'], // Ensure user is loaded
@@ -56,7 +56,7 @@ export class TripMemberService {
     return tripMember;
   }
 
-  async addMember(trip: Trip, email: string): Promise<TripMember> {
+  async addMember(trip: Trip, email: string): Promise<Member> {
     const user = await this.userService.findByEmail(email);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -94,7 +94,7 @@ export class TripMemberService {
   async updateMemberRole(
     trip: Trip,
     updateMemberRoleDto: UpdateMemberRoleDto,
-  ): Promise<TripMember> {
+  ): Promise<Member> {
     // Verifies if the given user is not the owner of the trip
     if (updateMemberRoleDto.email === trip.trip_owner.email) {
       throw new ForbiddenException("You can't modify roles of the trip owner");

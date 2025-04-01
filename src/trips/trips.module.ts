@@ -1,21 +1,21 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from '../users/users.module';
-import { TripMember } from './trip-member/entities/trip-members.entity';
-import { Trip } from './trip/entities/trip.entity';
+import { Member } from './members/entities/members.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TripsController } from './trip/trips.controller';
-import { TripsService } from './trip/trips.service';
-import { TripMemberService } from './trip-member/trip-members.service';
-import { TripMemberController } from './trip-member/trip-member.controller';
+import { TripsController } from './trips.controller';
+import { TripsService } from './trips.service';
+import { MembersService } from './members/members.service';
+import { MembersController } from './members/members.controller';
+import { Trip } from './entities/trip.entity';
 
 @Module({
   imports: [
     ConfigModule,
     UsersModule,
-    TypeOrmModule.forFeature([Trip, TripMember]),
+    TypeOrmModule.forFeature([Trip, Member]),
   ],
-  controllers: [TripsController, TripMemberController],
-  providers: [TripsService, TripMemberService],
+  controllers: [TripsController, MembersController],
+  providers: [TripsService, MembersService],
 })
 export class TripsModule {}
