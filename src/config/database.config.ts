@@ -2,6 +2,7 @@ import { registerAs } from '@nestjs/config';
 import { User } from '../users/user.entity';
 import { Member } from '../trips/members/entities/members.entity';
 import { Trip } from '../trips/entities/trip.entity';
+import { ChecklistItem } from '../trips/checklist/entities/checklist-item.entity';
 
 export const databaseConfig = registerAs('database', () => ({
   type: 'postgres' as const,
@@ -10,6 +11,6 @@ export const databaseConfig = registerAs('database', () => ({
   username: process.env.DB_USERNAME!,
   password: process.env.DB_PASSWORD!,
   database: process.env.DB_NAME!,
-  entities: [User, Trip, Member],
+  entities: [User, Trip, Member, ChecklistItem],
   synchronize: false,
 }));

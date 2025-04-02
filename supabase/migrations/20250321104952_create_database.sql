@@ -97,7 +97,7 @@ CREATE TABLE check_list (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     trip_id UUID REFERENCES trips(id),
     name VARCHAR(255) NOT NULL,
-    assignee UUID REFERENCES users(id),
+    assignee UUID NULL REFERENCES users(id),
     done BOOLEAN DEFAULT FALSE -- Task status
 );
 

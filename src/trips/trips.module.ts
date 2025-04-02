@@ -8,14 +8,17 @@ import { TripsService } from './trips.service';
 import { MembersService } from './members/members.service';
 import { MembersController } from './members/members.controller';
 import { Trip } from './entities/trip.entity';
+import { ChecklistController } from './checklist/checklist.controller';
+import { CheckListService } from './checklist/checklist.service';
+import { ChecklistItem } from './checklist/entities/checklist-item.entity';
 
 @Module({
   imports: [
     ConfigModule,
     UsersModule,
-    TypeOrmModule.forFeature([Trip, Member]),
+    TypeOrmModule.forFeature([Trip, Member, ChecklistItem]),
   ],
-  controllers: [TripsController, MembersController],
-  providers: [TripsService, MembersService],
+  controllers: [TripsController, MembersController, ChecklistController],
+  providers: [TripsService, MembersService, CheckListService],
 })
 export class TripsModule {}
