@@ -72,11 +72,15 @@ export class TripsService {
       )
       .leftJoinAndSelect('trip.trip_owner', 'trip_owner')
 
+      .leftJoinAndSelect('trip.tripMembers', 'tripMembers')
+      .leftJoinAndSelect('tripMembers.user', 'memberUser')
+
       .leftJoinAndSelect('trip.checklistItems', 'checklistItems')
       .leftJoinAndSelect('checklistItems.assignee', 'itemAssignee')
 
-      .leftJoinAndSelect('trip.tripMembers', 'tripMembers')
-      .leftJoinAndSelect('tripMembers.user', 'memberUser')
+      .leftJoinAndSelect('trip.shoppingItems', 'shoppingItems')
+      .leftJoinAndSelect('shoppingItems.suggestedBy', 'shoppingItemSuggestedBy')
+
       .getMany();
 
     return trips;

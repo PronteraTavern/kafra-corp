@@ -10,6 +10,7 @@ import {
 import { User } from '../../users/user.entity';
 import { Member } from '../members/entities/members.entity';
 import { ChecklistItem } from '../checklist/entities/checklist-item.entity';
+import { ShoppingItem } from '../shopping-items/entities/shopping-item.entity';
 
 export enum TripStatus {
   PLANNING = 'Planning',
@@ -51,4 +52,9 @@ export class Trip {
     nullable: true,
   })
   checklistItems: [ChecklistItem];
+
+  @OneToMany(() => ShoppingItem, (shoppingItem) => shoppingItem.trip, {
+    nullable: true,
+  })
+  shoppingItems: [ShoppingItem];
 }

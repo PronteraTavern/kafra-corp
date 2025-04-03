@@ -11,14 +11,27 @@ import { Trip } from './entities/trip.entity';
 import { ChecklistController } from './checklist/checklist.controller';
 import { CheckListService } from './checklist/checklist.service';
 import { ChecklistItem } from './checklist/entities/checklist-item.entity';
+import { ShoppingItem } from './shopping-items/entities/shopping-item.entity';
+import { ShoppingItemsService } from './shopping-items/shopping-items.service';
+import { ShoppingItemsController } from './shopping-items/shopping-items.controller';
 
 @Module({
   imports: [
     ConfigModule,
     UsersModule,
-    TypeOrmModule.forFeature([Trip, Member, ChecklistItem]),
+    TypeOrmModule.forFeature([Trip, Member, ChecklistItem, ShoppingItem]),
   ],
-  controllers: [TripsController, MembersController, ChecklistController],
-  providers: [TripsService, MembersService, CheckListService],
+  controllers: [
+    TripsController,
+    MembersController,
+    ChecklistController,
+    ShoppingItemsController,
+  ],
+  providers: [
+    TripsService,
+    MembersService,
+    CheckListService,
+    ShoppingItemsService,
+  ],
 })
 export class TripsModule {}
