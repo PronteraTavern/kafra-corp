@@ -1,10 +1,6 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 
-import { DataSource } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Trip, TripStatus } from './entities/trip.entity';
 import { CreateTripDto } from './dto/create-trip.dto';
 import { User } from '../users/user.entity';
@@ -14,6 +10,49 @@ import { UpdateTripDto } from './dto/update-trip.dto';
 @Injectable()
 export class TripsService {
   constructor(private readonly dataSource: DataSource) {}
+
+  async findOne(id: string): Promise<Trip> {
+    const tripsRepository = this.dataSource.manager.getRepository(Trip);
+
+    const trip = await tripsRepository.findOne({
+      where: { id },
+      relations: [
+        'trip_owner',
+        'tripMembers',
+        'tripMembers.user',
+        'checklistItems',
+        'shoppingItems',
+      ],
+    });
+
+    if (!trip) {
+      throw new NotFoundException('Trip not found');
+    }
+
+    return trip;
+  }
+
+  async findOneForTransactions(
+    id: string,
+    tripsRepository: Repository<Trip>,
+  ): Promise<Trip> {
+    const trip = await tripsRepository.findOne({
+      where: { id },
+      relations: [
+        'trip_owner',
+        'tripMembers',
+        'tripMembers.user',
+        'checklistItems',
+        'shoppingItems',
+      ],
+    });
+
+    if (!trip) {
+      throw new NotFoundException('Trip not found');
+    }
+
+    return trip;
+  }
 
   async create(user: User, createTripDto: CreateTripDto): Promise<Trip> {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -39,17 +78,13 @@ export class TripsService {
       await tripMembersRepository.save(newTripMember);
 
       // Load trip members without including the full trip object
-      const tripWithMembers = await tripsRepository.findOne({
-        where: { id: persistedTrip.id },
-        relations: ['tripMembers', 'tripMembers.user'],
-      });
-
-      if (!tripWithMembers) {
-        throw new InternalServerErrorException();
-      }
+      const fullTripObject = await this.findOneForTransactions(
+        persistedTrip.id,
+        tripsRepository,
+      );
 
       await queryRunner.commitTransaction();
-      return tripWithMembers;
+      return fullTripObject;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -86,25 +121,6 @@ export class TripsService {
     return trips;
   }
 
-  async findOne(tripId: string): Promise<Trip> {
-    const tripsRepository = this.dataSource.manager.getRepository(Trip);
-    const trip = await tripsRepository.findOne({
-      where: { id: tripId },
-      relations: [
-        'trip_owner',
-        'tripMembers',
-        'tripMembers.user',
-        'checklistItems',
-        'checklistItems.assignee',
-      ],
-    });
-
-    if (!trip) {
-      throw new NotFoundException();
-    }
-    return trip;
-  }
-
   async update(
     tripToUpdate: Trip,
     updateTripDto: UpdateTripDto,
@@ -118,16 +134,9 @@ export class TripsService {
     await tripsRepository.save(tripToUpdate);
 
     //Fetch full trip object
-    const updatedTrip = await tripsRepository.find({
-      relations: ['tripMembers', 'tripMembers.user', 'trip_owner'],
+    const fullTripObject = await this.findOne(tripToUpdate.id);
 
-      where: {
-        tripMembers: { trip: { id: tripToUpdate.id } },
-      },
-    });
-
-    // Return
-    return updatedTrip[0];
+    return fullTripObject;
   }
 
   async remove(tripToDelete: Trip): Promise<void> {
