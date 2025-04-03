@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/user.entity';
 import { Member } from '../members/entities/members.entity';
+import { ChecklistItem } from '../checklist/entities/checklist-item.entity';
 
 export enum TripStatus {
   PLANNING = 'Planning',
@@ -45,4 +46,9 @@ export class Trip {
     nullable: false,
   })
   tripMembers: [Member];
+
+  @OneToMany(() => ChecklistItem, (checkListItem) => checkListItem.trip, {
+    nullable: true,
+  })
+  checklistItems: [ChecklistItem];
 }

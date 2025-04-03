@@ -71,9 +71,14 @@ export class TripsService {
         { userId },
       )
       .leftJoinAndSelect('trip.trip_owner', 'trip_owner')
+
+      .leftJoinAndSelect('trip.checklistItems', 'checklistItems')
+      .leftJoinAndSelect('checklistItems.assignee', 'itemAssignee')
+
       .leftJoinAndSelect('trip.tripMembers', 'tripMembers')
       .leftJoinAndSelect('tripMembers.user', 'memberUser')
       .getMany();
+
     return trips;
   }
 
@@ -81,7 +86,13 @@ export class TripsService {
     const tripsRepository = this.dataSource.manager.getRepository(Trip);
     const trip = await tripsRepository.findOne({
       where: { id: tripId },
-      relations: ['trip_owner', 'tripMembers', 'tripMembers.user'],
+      relations: [
+        'trip_owner',
+        'tripMembers',
+        'tripMembers.user',
+        'checklistItems',
+        'checklistItems.assignee',
+      ],
     });
 
     if (!trip) {
