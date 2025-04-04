@@ -1,6 +1,7 @@
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsNotEmpty, IsString } from 'class-validator';
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -32,4 +33,8 @@ export class ChecklistItem {
   @Column()
   @IsBoolean()
   done: boolean;
+
+  @CreateDateColumn()
+  @IsDate()
+  created_at: Date;
 }

@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Trip } from '../../entities/trip.entity';
-import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
 import { User } from '../../../users/user.entity';
 
 @Entity('shopping_items')
@@ -32,8 +32,8 @@ export class ShoppingItem {
 
   @Column()
   @IsNotEmpty()
-  @IsNumber()
-  quantity: number;
+  @IsString()
+  quantity: string;
 
   @Column()
   @IsNotEmpty()

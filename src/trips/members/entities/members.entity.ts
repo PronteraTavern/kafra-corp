@@ -5,12 +5,12 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Unique,
 } from 'typeorm';
 import { User } from '../../../users/user.entity';
-import { Exclude } from 'class-transformer';
 import { Trip } from '../../entities/trip.entity';
+import { Exclude } from 'class-transformer';
 
 export enum TripRole {
   MEMBER = 'Member',
@@ -20,9 +20,13 @@ export enum TripRole {
 @Entity('trip_members')
 @Unique(['trip', 'user']) // Ensures unique (trip_id, user_id) combination
 export class Member {
-  @PrimaryGeneratedColumn('uuid')
   @Exclude()
-  id: string;
+  @PrimaryColumn({ type: 'uuid' }) // Mark trip_id as part of the primary key
+  trip_id: string;
+
+  @Exclude()
+  @PrimaryColumn({ type: 'uuid' }) // Mark user_id as part of the primary key
+  user_id: string;
 
   @ManyToOne(() => Trip, (trip) => trip.id, { nullable: false })
   @JoinColumn({ name: 'trip_id' })

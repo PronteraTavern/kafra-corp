@@ -43,9 +43,12 @@ export class MembersService {
     });
   }
 
-  async fetchTripMemberForReturn(tripMemberId: string): Promise<Member> {
+  async fetchTripMemberForReturn(
+    tripId: string,
+    userId: string,
+  ): Promise<Member> {
     const tripMember = await this.tripMembersRepository.findOne({
-      where: { id: tripMemberId },
+      where: { trip: { id: tripId }, user: { id: userId } },
       relations: ['user'], // Ensure user is loaded
     });
 
@@ -72,20 +75,29 @@ export class MembersService {
 
       const savedMember = await this.tripMembersRepository.save(createdMember);
 
-      return this.fetchTripMemberForReturn(savedMember.id);
+      return this.fetchTripMemberForReturn(
+        savedMember.trip.id,
+        savedMember.user.id,
+      );
     } else {
       // If there's a record on the table we need to check if it's a deleted member to restore it.
       if (tripMember.deleted_at !== null) {
         const restoreResult = await this.tripMembersRepository
           .createQueryBuilder()
           .restore()
-          .where('id = :id', { id: tripMember.id })
+          .where('trip_id = :trip_id AND user_id = :user_id ', {
+            trip_id: trip.id,
+            user_id: user.id,
+          })
           .execute();
 
         if (restoreResult.affected !== 1) {
           throw new ConflictException('Something went wrong');
         }
-        return this.fetchTripMemberForReturn(tripMember.id);
+        return this.fetchTripMemberForReturn(
+          tripMember.trip.id,
+          tripMember.user.id,
+        );
       }
       throw new ConflictException('This user is already a member of the trip');
     }
@@ -112,7 +124,10 @@ export class MembersService {
     tripMember.role = updateMemberRoleDto.role;
     const updatedMember = await this.tripMembersRepository.save(tripMember);
 
-    return this.fetchTripMemberForReturn(updatedMember.id);
+    return this.fetchTripMemberForReturn(
+      updatedMember.trip.id,
+      updatedMember.user.id,
+    );
   }
 
   async removeMember(trip: Trip, email: string): Promise<void> {
@@ -133,7 +148,10 @@ export class MembersService {
     await this.tripMembersRepository
       .createQueryBuilder()
       .softDelete()
-      .where('id = :id', { id: tripMember.id })
+      .where('trip_id = :trip_id AND user_id = :user_id ', {
+        trip_id: trip.id,
+        user_id: user.id,
+      })
       .execute();
     //return
 
